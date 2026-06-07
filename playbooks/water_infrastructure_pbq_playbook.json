@@ -1,0 +1,150 @@
+{
+  "playbook_id": "water_infrastructure_pbq_playbook",
+  "version": "2026-06-07",
+  "derived_from": "Generalized patterns extracted from prior water-infrastructure PBQ examples. Project names, client names, locations, document filenames, and site-specific facts have been removed.",
+  "purpose": "Reusable bidder-intelligence playbook for DBO/EPC/O&M water infrastructure tenders. Use it to generate practical human-style PBQs in addition to deep commercial, legal, and cross-document risk queries.",
+  "generation_modes": [
+    {
+      "mode": "deep_risk_discovery",
+      "instruction": "Find hidden commercial, legal, technical, payment, escalation, O&M, and cross-document risks."
+    },
+    {
+      "mode": "manual_pbq_coverage",
+      "instruction": "Also generate obvious bidder clarification rows that a tender engineer would raise even if they are not the highest-risk item."
+    }
+  ],
+  "manual_pbq_style": {
+    "preferred_phrases": [
+      "Please provide...",
+      "Please confirm...",
+      "Please review and confirm.",
+      "Kindly review and confirm.",
+      "We understand that...",
+      "We request you to kindly...",
+      "Please include the same in BOQ.",
+      "Please review and revise."
+    ],
+    "structure": [
+      "Briefly quote or paraphrase the tender requirement.",
+      "State the bidder's understanding or the gap.",
+      "Ask for one concrete employer action: provide, confirm, clarify, revise, include in BOQ, define responsibility, or amend clause.",
+      "Keep wording send-ready and practical."
+    ],
+    "do_not_filter_out": [
+      "Small but pricing-relevant missing drawings/details.",
+      "Typographical or clause-heading mismatches.",
+      "BOQ inclusion and quantity-location clarifications.",
+      "Please-confirm scope splits.",
+      "Standard industry relaxation requests."
+    ]
+  },
+  "industry_norms": [
+    {
+      "topic": "Defect liability period",
+      "norm": "For similar municipal water tenders, bidders commonly request DLP reduction from 24 months to 12 months after completion certificate."
+    },
+    {
+      "topic": "Security deposit",
+      "norm": "High running-bill security deposit deductions materially hurt contractor cash flow; bidders commonly request about 3% cap or release against bank guarantee."
+    },
+    {
+      "topic": "O&M performance security",
+      "norm": "O&M security for a full 10-year amount can be excessive; bidders commonly request annualized, reducing, or lower percentage security."
+    },
+    {
+      "topic": "Mobilization advance",
+      "norm": "Bidders commonly request mobilization advance to be interest-free for project cash-flow efficiency."
+    },
+    {
+      "topic": "O&M payments",
+      "norm": "Monthly O&M payment is often preferred over quarterly or annual payment for operating cash flow."
+    },
+    {
+      "topic": "O&M escalation",
+      "norm": "Fixed annual escalation may not reflect real labor, chemical, power, fuel, consumables, or statutory wage movement; request a standard escalation formula."
+    },
+    {
+      "topic": "Change in law and taxes",
+      "norm": "Changes in tax, law, statutory interpretation, or technical standards after bid base date should generally be compensable or treated as variation."
+    },
+    {
+      "topic": "Unforeseeable physical conditions",
+      "norm": "Bidders should not carry unbounded subsurface, hydrological, obstruction, pollutant, or manmade physical condition risk without relief/variation mechanism."
+    }
+  ],
+  "standard_missing_data_checklist": [
+    "AutoCAD/DWG files for all tender drawings and DPR drawings",
+    "Complete DPR and annexures referenced by drawings/specifications",
+    "Overall layout/key plan marking all existing and proposed units",
+    "Route alignment plans and L-sections for all pipelines",
+    "Geotechnical/soil investigation reports with bore logs and lab data",
+    "Topographic survey drawings, raw survey data, contour drawings, and control points",
+    "Hydrological study, HFL/LWL, scour, river velocity, and flood data",
+    "Hydraulic design basis, system head curves, surge analysis, pump curves, and design calculations",
+    "Utility mapping/as-built drawings for underground and overhead utilities",
+    "Land/ROW/forest/rail/road/canal crossing permissions and responsibility status",
+    "Site access, approach road, working space, barricading, and sheet-piling constraints",
+    "Existing asset condition assessment, asset registers, rehabilitation baseline, and handover protocol"
+  ],
+  "commercial_risk_checklist": [
+    "Whether BOQ items are all-inclusive or payable as variation",
+    "Whether new works are lump sum while rehabilitation/pipe works are item-rate",
+    "Payment milestone percentages that do not total 100%",
+    "Trial-run/commissioning payment linkage and who bears repeated trial costs",
+    "RA bill frequency and billing break-up mechanism",
+    "Secured advance availability, recovery, and treatment in price adjustment",
+    "Mobilization advance amount, interest, BG format, and recovery",
+    "Security deposit percentage, release timing, and replacement by BG",
+    "Performance security amount/validity for capex and O&M",
+    "Buy-back/scrap value reasonableness, inventory, condition, and valuation basis",
+    "Base indices, base date, source indices, and component weights for price adjustment",
+    "O&M escalation applicability and formula",
+    "Tax, GST, TDS, duties, statutory levy, and change-in-law treatment"
+  ],
+  "legal_risk_checklist": [
+    "Liability cap and exclusion of indirect/consequential losses",
+    "Liquidated damages cap and sole-remedy wording",
+    "Retained sum adjustment against LDs",
+    "Contractor liability for approved designs/drawings/documents",
+    "Employer approval delay and deemed approval",
+    "Employer default and contractor right to terminate",
+    "Payment upon termination, including demobilization, profit/loss, securities return, and work value",
+    "Termination for convenience should be mutual/fair or compensated",
+    "Unforeseeable physical conditions clause",
+    "Change in law / change in technical standards adjustment",
+    "Insurance coverage details, waiver of subrogation, uninsurable risks, and deductibles",
+    "Permissions/clearances responsibility and cost allocation"
+  ],
+  "technical_execution_checklist": [
+    "Approach bridge dimensions, GAD, design criteria, and geotech/topography",
+    "Intake screens: number, standby, opening, bar thickness, MOC, manual/mechanical operation, conveyor, bins",
+    "Raw-water/clear-water pump head, discharge, motor rating, efficiency, and duty/standby conflicts",
+    "Surge vessel type, sizing, analysis, and conventional vs diaphragm conflicts",
+    "Pipeline route lengths, interconnection points, crossings, thrust/anchor blocks, bends, supports, and anti-buoyancy",
+    "Nallah/stream/road/rail/canal crossings and required construction methodology",
+    "SCADA/PLC architecture, redundancy, protocols, server integration, API integration, instrumentation quantity, and external authority/platform interface",
+    "HT line/substation route, land, metering, feeder bay, O&M responsibility, and payment schedule",
+    "WTP process design criteria, raw water quality data, chemical/fuel/power assumptions, and sludge/backwash scope",
+    "Existing structures/utilities relocation and responsibility"
+  ],
+  "o_and_m_checklist": [
+    "O&M start date for new and existing/rehabilitated assets",
+    "PG test, commissioning certificate, completion certificate, and section-wise handover conditions",
+    "Whether O&M of existing facilities is required during construction",
+    "Major maintenance threshold and routine-vs-major repair split",
+    "Existing asset repair/replacement responsibility and payment mechanism",
+    "Manpower requirement reasonableness and bidder flexibility",
+    "Power, fuel, chemicals, consumables, sludge, waste disposal, and statutory wage escalation",
+    "Monthly/quarterly/annual O&M payment mechanism",
+    "O&M performance security and release/reduction basis",
+    "Condition assessment and baseline for handover/takeover"
+  ],
+  "coverage_rules": [
+    "Run both deep_risk_discovery and manual_pbq_coverage modes before finalizing.",
+    "For each tender section/category, ask what a practical bidder needs to price, design, construct, operate, insure, schedule, or legally accept the work.",
+    "Do not reject a useful practical clarification merely because it is not Critical; keep Medium rows when they protect price, scope, design, schedule, or responsibility.",
+    "Prefer exact page/clause references from evidence. If not available, use '-' rather than inventing.",
+    "Deduplicate only if the employer action is the same. Same broad topic with different required action should remain separate.",
+    "Use the playbook as reusable tender intelligence, not as project fact. A query still needs project evidence or a material absence after search."
+  ]
+}

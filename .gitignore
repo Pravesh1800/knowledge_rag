@@ -1,0 +1,15 @@
+.env
+__pycache__/
+*.pyc
+documents/
+indexes/
+work/
+logs/
+projects/
+*.log
+*_stdout.log
+*_stderr.log
+*.pdf
+*.xlsx
+*.xls
+*.csv

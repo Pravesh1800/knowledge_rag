@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF Vision RAG</title>
+    <link rel="stylesheet" href="/static/styles.css?v=excel-cache-fix-1" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <a class="brand" href="/projects" data-link aria-label="PDF Vision RAG projects">
+          <span class="brand-mark">VR</span>
+          <span>
+            <strong>Vision RAG</strong>
+            <small>Document intelligence</small>
+          </span>
+        </a>
+
+        <form id="project-form" class="project-form">
+          <label for="project-name">New project</label>
+          <div class="create-row">
+            <input id="project-name" placeholder="Project name" />
+            <button type="submit">Create</button>
+          </div>
+        </form>
+      </header>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p id="route-kicker" class="eyebrow">Projects</p>
+            <h1 id="page-title">Project command center</h1>
+          </div>
+        </header>
+
+        <section id="page" class="page" aria-live="polite"></section>
+      </main>
+    </div>
+
+    <script src="/static/app.js?v=excel-cache-fix-1"></script>
+  </body>
+</html>
