@@ -173,12 +173,27 @@ def llm_rank(
 
 
 class TreeSearcher:
-    def __init__(self, query: str, dry_run: bool, max_hits: int) -> None:
+    def __init__(
+        self,
+        query: str,
+        dry_run: bool,
+        max_hits: int,
+        project_root: Path | None = None,
+        indexes_dir: Path | None = None,
+        topic_index_path: Path | None = None,
+        relationship_map_path: Path | None = None,
+        search_results_dir: Path | None = None,
+    ) -> None:
         self.query = query
         self.dry_run = dry_run
         self.max_hits = max_hits
-        self.topics = read_json(TOPIC_INDEX_PATH, [])
-        self.map = read_json(RELATIONSHIP_MAP_PATH, {})
+        self.project_root = (project_root or PROJECT_ROOT).resolve()
+        self.indexes_dir = (indexes_dir or self.project_root / "indexes").resolve()
+        self.topic_index_path = topic_index_path or self.indexes_dir / "topic_index.json"
+        self.relationship_map_path = relationship_map_path or self.indexes_dir / "relationship_map.json"
+        self.search_results_dir = search_results_dir or self.indexes_dir / "search_results"
+        self.topics = read_json(self.topic_index_path, [])
+        self.map = read_json(self.relationship_map_path, {})
         if not self.topics:
             raise SystemExit("No topic index found. Run indexer.py first.")
         if not self.map:
@@ -452,7 +467,7 @@ def run_search(query: str, dry_run: bool, max_hits: int) -> dict[str, Any]:
     load_dotenv()
     searcher = TreeSearcher(query=query, dry_run=dry_run, max_hits=max_hits)
     result = searcher.search()
-    output_path = SEARCH_RESULTS_DIR / f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{slugify(query)[:60]}.json"
+    output_path = searcher.search_results_dir / f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{slugify(query)[:60]}.json"
     write_json(output_path, result)
     print(f"Wrote search result to {output_path}")
     for hit in result["hits"]:

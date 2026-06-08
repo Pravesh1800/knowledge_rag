@@ -165,7 +165,6 @@ class PreBidQueryAgent:
         self.client, self.model, self.web_research_model = create_client()
         self.logs: list[dict[str, Any]] = []
         self.log_lock = threading.Lock()
-        self.search_lock = threading.Lock()
         self.progress_path = self.reports_dir / "prebid_queries.progress.json"
 
     def ensure_prebid_flags(self) -> None:
@@ -218,18 +217,19 @@ class PreBidQueryAgent:
         return evidence
 
     def searched_evidence(self, query: str, max_hits: int = 14) -> list[dict[str, Any]]:
-        # searcher.py uses module-level project paths, so protect this block while
-        # category agents run in parallel.
-        with self.search_lock:
-            os.environ["PDF_VISION_RAG_ROOT"] = str(self.project_root)
-            os.environ.setdefault("OPENROUTER_SEARCH_MODEL", os.getenv("OPENROUTER_SEARCH_MODEL", DEFAULT_SEARCH_MODEL))
-            searcher_module.PROJECT_ROOT = self.project_root
-            searcher_module.INDEXES_DIR = self.indexes_dir
-            searcher_module.TOPIC_INDEX_PATH = self.indexes_dir / "topic_index.json"
-            searcher_module.RELATIONSHIP_MAP_PATH = self.indexes_dir / "relationship_map.json"
-            searcher_module.SEARCH_RESULTS_DIR = self.indexes_dir / "search_results"
-            tree_searcher = searcher_module.TreeSearcher(query=query, dry_run=False, max_hits=max_hits)
-            result = tree_searcher.search()
+        os.environ["PDF_VISION_RAG_ROOT"] = str(self.project_root)
+        os.environ.setdefault("OPENROUTER_SEARCH_MODEL", os.getenv("OPENROUTER_SEARCH_MODEL", DEFAULT_SEARCH_MODEL))
+        tree_searcher = searcher_module.TreeSearcher(
+            query=query,
+            dry_run=False,
+            max_hits=max_hits,
+            project_root=self.project_root,
+            indexes_dir=self.indexes_dir,
+            topic_index_path=self.indexes_dir / "topic_index.json",
+            relationship_map_path=self.indexes_dir / "relationship_map.json",
+            search_results_dir=self.indexes_dir / "search_results",
+        )
+        result = tree_searcher.search()
         by_triplet = {
             (topic.get("topic_name"), topic.get("document_name"), int(topic.get("page_no") or 0)): topic
             for topic in self.topics

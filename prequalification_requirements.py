@@ -17,9 +17,9 @@ from legal_assessment import (
     DEFAULT_SEARCH_MODEL,
     OPENROUTER_BASE_URL,
     compact_evidence,
-    json_completion,
     load_dotenv,
     merge_evidence,
+    parse_json_response,
     read_json,
     topic_to_evidence,
     write_json,
@@ -191,7 +191,6 @@ class PrequalificationRequirementsAgent:
         self.client, self.model = create_client()
         self.logs: list[dict[str, Any]] = []
         self.log_lock = threading.Lock()
-        self.search_lock = threading.Lock()
         self.progress_path = self.reports_dir / "prequalification_requirements.progress.json"
 
     def log(self, message: str, section_id: str | None = None, detail: dict[str, Any] | None = None) -> None:
@@ -215,18 +214,19 @@ class PrequalificationRequirementsAgent:
             )
 
     def searched_evidence(self, query: str, max_hits: int = 14) -> list[dict[str, Any]]:
-        # searcher.py uses module-level project paths, so protect this setup while
-        # all seven pre-qualification sections run in parallel.
-        with self.search_lock:
-            os.environ["PDF_VISION_RAG_ROOT"] = str(self.project_root)
-            os.environ.setdefault("OPENROUTER_SEARCH_MODEL", os.getenv("OPENROUTER_SEARCH_MODEL", DEFAULT_SEARCH_MODEL))
-            searcher_module.PROJECT_ROOT = self.project_root
-            searcher_module.INDEXES_DIR = self.indexes_dir
-            searcher_module.TOPIC_INDEX_PATH = self.indexes_dir / "topic_index.json"
-            searcher_module.RELATIONSHIP_MAP_PATH = self.indexes_dir / "relationship_map.json"
-            searcher_module.SEARCH_RESULTS_DIR = self.indexes_dir / "search_results"
-            tree_searcher = searcher_module.TreeSearcher(query=query, dry_run=False, max_hits=max_hits)
-            result = tree_searcher.search()
+        os.environ["PDF_VISION_RAG_ROOT"] = str(self.project_root)
+        os.environ.setdefault("OPENROUTER_SEARCH_MODEL", os.getenv("OPENROUTER_SEARCH_MODEL", DEFAULT_SEARCH_MODEL))
+        tree_searcher = searcher_module.TreeSearcher(
+            query=query,
+            dry_run=False,
+            max_hits=max_hits,
+            project_root=self.project_root,
+            indexes_dir=self.indexes_dir,
+            topic_index_path=self.indexes_dir / "topic_index.json",
+            relationship_map_path=self.indexes_dir / "relationship_map.json",
+            search_results_dir=self.indexes_dir / "search_results",
+        )
+        result = tree_searcher.search()
         by_triplet = {
             (topic.get("topic_name"), topic.get("document_name"), int(topic.get("page_no") or 0)): topic
             for topic in self.topics
@@ -351,25 +351,99 @@ Verification rules:
 - Keep only distinct rows.
 """.strip()
 
+    def call_json(self, prompt: str, system: str, max_tokens: int, section_id: str, stage: str) -> dict[str, Any]:
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0,
+            response_format={"type": "json_object"},
+            max_tokens=max_tokens,
+        )
+        content = response.choices[0].message.content or "{}"
+        try:
+            return parse_json_response(content)
+        except Exception as exc:
+            self.log(
+                f"Pre-qualification {stage} returned malformed JSON; repairing without restarting the section.",
+                section_id,
+                {"error": str(exc)},
+            )
+            return self.repair_json(content, str(exc), max_tokens, section_id, stage)
+
+    def repair_json(self, malformed_content: str, parser_error: str, max_tokens: int, section_id: str, stage: str) -> dict[str, Any]:
+        repair_content = malformed_content
+        repair_error = parser_error
+        for attempt in range(1, 4):
+            repair_prompt = f"""
+Repair this malformed model output into valid JSON only.
+
+Exact parser error to fix:
+{repair_error}
+
+Required output:
+- valid JSON object only
+- no markdown fences
+- no comments
+- double-quote every object key and string
+- close any unterminated string
+- insert missing commas between adjacent properties, objects, and array items
+- remove trailing commas
+- preserve all fields and meanings that can be recovered
+- do not summarize, shorten, or regenerate the answer
+
+Malformed output:
+{repair_content}
+""".strip()
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are a JSON repair engine. Return only one valid JSON object."},
+                    {"role": "user", "content": repair_prompt},
+                ],
+                temperature=0,
+                response_format={"type": "json_object"},
+                max_tokens=max_tokens,
+            )
+            repair_content = response.choices[0].message.content or "{}"
+            try:
+                fixed = parse_json_response(repair_content)
+                self.log(
+                    f"Pre-qualification {stage} JSON repair succeeded on attempt {attempt}/3.",
+                    section_id,
+                )
+                return fixed
+            except Exception as exc:
+                repair_error = str(exc)
+                self.log(
+                    f"Pre-qualification {stage} JSON repair attempt {attempt}/3 failed.",
+                    section_id,
+                    {"error": repair_error},
+                )
+        raise ValueError(f"Pre-qualification {stage} returned malformed JSON and repair failed: {repair_error}")
+
     def answer_section(self, section: dict[str, Any]) -> dict[str, Any]:
         self.log(f"Searching pre-qualification evidence for {section['title']}.", section["id"])
         searched = self.searched_evidence(section["query"])
         keyword = self.keyword_evidence(section["terms"])
         evidence = merge_evidence(searched + keyword)
         self.log(f"Collected {len(evidence)} evidence topic(s) for {section['title']}.", section["id"])
-        draft = json_completion(
-            self.client,
-            self.model,
+        max_tokens = int(os.getenv("OPENROUTER_PREQUAL_MAX_TOKENS", str(DEFAULT_AGENT_MAX_TOKENS + 1024)))
+        draft = self.call_json(
             self.extraction_prompt(section, evidence),
             "Return only valid JSON. You are a strict tender pre-qualification extraction specialist.",
-            max_tokens=int(os.getenv("OPENROUTER_PREQUAL_MAX_TOKENS", str(DEFAULT_AGENT_MAX_TOKENS + 1024))),
+            max_tokens,
+            section["id"],
+            "extraction",
         )
-        verifier = json_completion(
-            self.client,
-            self.model,
+        verifier = self.call_json(
             self.verifier_prompt(section, draft, evidence),
             "Return only valid JSON. You verify tender pre-qualification extractions against evidence.",
-            max_tokens=int(os.getenv("OPENROUTER_PREQUAL_MAX_TOKENS", str(DEFAULT_AGENT_MAX_TOKENS + 1024))),
+            max_tokens,
+            section["id"],
+            "verifier",
         )
         rows = verifier.get("rows", []) if isinstance(verifier.get("rows", []), list) else []
         self.log(f"Verifier finalized {len(rows)} pre-qualification row(s) for {section['title']}.", section["id"], {"warnings": verifier.get("warnings", [])})

@@ -153,6 +153,29 @@ function downloadPrequalificationExcel() {
   downloadExcelWorkbook(`${projectFileStem()}_prequalification_requirements.xls`, columns, rows);
 }
 
+function prequalificationSheetColumns() {
+  return [
+    ["S. No.", "s_no", "pbq-col-sno"],
+    ["Type", "requirement_type", "prequal-col-type"],
+    ["Area", "requirement_area", "prequal-col-area"],
+    ["Document Name", "document_name", "pbq-col-document"],
+    ["Tender Vol. / Section", "tender_vol_section", "pbq-col-section"],
+    ["Page No.", "page_no", "pbq-col-page"],
+    ["Clause No.", "clause_no", "pbq-col-clause"],
+    ["Requirement Text", "requirement_text", "prequal-col-requirement"],
+    ["Threshold / Value", "threshold_or_value", "prequal-col-threshold"],
+    ["Applicable To", "applicable_to", "prequal-col-applicable"],
+    ["Proof Required", "proof_required", "prequal-col-proof"],
+    ["Compliance Note", "compliance_note", "prequal-col-note"],
+    ["Confidence", "confidence", "prequal-col-confidence"],
+  ];
+}
+
+function prequalificationSheetValue(row, key, index) {
+  if (key === "s_no") return row.s_no || index + 1;
+  return row[key] || "-";
+}
+
 function downloadLegalExcel() {
   const rows = legalReport?.rows || [];
   const columns = [
@@ -1046,7 +1069,22 @@ function prequalificationReportHtml(report) {
   if (!report || !report.rows) {
     return `<div class="empty-row">No Pre-Qualification Requirements document has been generated yet.</div>`;
   }
-  const rows = report.rows
+  const prequalColumns = prequalificationSheetColumns();
+  const tableRows = report.rows
+    .map(
+      (row, index) => `
+        <tr>
+          ${prequalColumns
+            .map(
+              ([, key, className]) =>
+                `<td class="${className}">${escapeHtml(prequalificationSheetValue(row, key, index))}</td>`,
+            )
+            .join("")}
+        </tr>
+      `,
+    )
+    .join("");
+  const detailRows = report.rows
     .map(
       (row) => `
         <details class="financial-row">
@@ -1092,12 +1130,63 @@ function prequalificationReportHtml(report) {
     .map((log) => `<div class="log-line">${escapeHtml(log.message)}</div>`)
     .join("");
   return `
-    <div class="financial-table">
-      <div class="financial-head">
+    <div class="prebid-table">
+      <div class="prebid-head">
         <span>Pre-Qualification Requirements</span>
-        <button type="button" class="table-expand-button" onclick="downloadPrequalificationExcel()">Download Excel</button>
+        <div class="prebid-head-actions">
+          <strong>${report.rows.length} rows</strong>
+          <button
+            type="button"
+            class="table-expand-button"
+            data-expand-pbq
+            onclick="const modal=this.closest('#prequalification-report')?.querySelector('[data-pbq-modal]'); if (modal) { modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false'); }"
+          >Expand table</button>
+          <button type="button" class="table-expand-button" onclick="downloadPrequalificationExcel()">Download Excel</button>
+        </div>
       </div>
-      ${rows}
+      <div class="pbq-sheet-wrap" aria-label="Pre-Qualification Requirements table format">
+        <table class="pbq-sheet prequal-sheet">
+          <thead>
+            <tr>
+              ${prequalColumns.map(([label, , className]) => `<th class="${className}">${escapeHtml(label)}</th>`).join("")}
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+      <details class="prebid-detail-block">
+        <summary>Evidence and full requirement details</summary>
+        <div class="prebid-detail-list">${detailRows}</div>
+      </details>
+    </div>
+    <div class="pbq-modal" data-pbq-modal aria-hidden="true">
+      <div class="pbq-modal-panel" role="dialog" aria-modal="true" aria-label="Expanded Pre-Qualification Requirements table">
+        <div class="pbq-modal-head">
+          <div>
+            <strong>Pre-Qualification Requirements</strong>
+            <span>${report.rows.length} rows</span>
+          </div>
+          <div class="prebid-head-actions">
+            <button type="button" class="table-expand-button" onclick="downloadPrequalificationExcel()">Download Excel</button>
+            <button
+              type="button"
+              class="table-expand-button"
+              data-close-pbq
+              onclick="const modal=this.closest('[data-pbq-modal]'); if (modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }"
+            >Close</button>
+          </div>
+        </div>
+        <div class="pbq-modal-body">
+          <table class="pbq-sheet prequal-sheet pbq-sheet-expanded">
+            <thead>
+              <tr>
+                ${prequalColumns.map(([label, , className]) => `<th class="${className}">${escapeHtml(label)}</th>`).join("")}
+              </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        </div>
+      </div>
     </div>
     <details class="agent-logs">
       <summary>Pre-Qualification specialist activity log</summary>

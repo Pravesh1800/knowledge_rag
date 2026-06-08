@@ -550,6 +550,27 @@ textarea {
   width: 22%;
 }
 
+.prequal-sheet {
+  min-width: 1900px;
+}
+
+.prequal-sheet .prequal-col-type,
+.prequal-sheet .prequal-col-confidence {
+  width: 120px;
+}
+
+.prequal-sheet .prequal-col-area,
+.prequal-sheet .prequal-col-threshold,
+.prequal-sheet .prequal-col-applicable {
+  width: 180px;
+}
+
+.prequal-sheet .prequal-col-requirement,
+.prequal-sheet .prequal-col-proof,
+.prequal-sheet .prequal-col-note {
+  width: 260px;
+}
+
 .pbq-modal {
   position: fixed;
   inset: 0;
