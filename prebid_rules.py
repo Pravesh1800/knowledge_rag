@@ -21,6 +21,29 @@ PREBID_FLAGS: list[dict[str, Any]] = [
         ],
     },
     {
+        "id": "bid_submission_forms",
+        "label": "Bid submission checklist, forms, certificates, packets",
+        "search_terms": [
+            "technical bid",
+            "financial bid",
+            "submission",
+            "packet",
+            "envelope",
+            "form",
+            "annexure",
+            "schedule",
+            "certificate",
+            "undertaking",
+            "affidavit",
+            "power of attorney",
+            "notarized",
+            "notarised",
+            "e-procurement",
+            "hard copy",
+            "checklist",
+        ],
+    },
+    {
         "id": "scope_gap_boq",
         "label": "Scope gaps, BOQ omissions, quantity responsibility",
         "search_terms": [
@@ -195,6 +218,12 @@ MANDATORY_AUDIT_CATEGORIES: list[dict[str, Any]] = [
         "title": "Qualification / Eligibility / JV / Parent Company",
         "goal": "Find qualification or eligibility clauses that may need relaxation, confirmation, parent-company reliance, JV/subsidiary clarification, or O&M experience clarification.",
         "flag_ids": ["qualification_eligibility", "contradiction_silence"],
+    },
+    {
+        "id": "bid_submission_forms",
+        "title": "Bid Submission / Forms / Technical Packet",
+        "goal": "Find missing, conflicting, or unclear bid submission requirements including forms, annexures, certificates, undertakings, signing authority, online/offline packets, hard copies, deviations, and bid-security submission.",
+        "flag_ids": ["bid_submission_forms", "qualification_eligibility", "contradiction_silence"],
     },
     {
         "id": "scope_boq_missing_items",

@@ -21,7 +21,6 @@ from legal_assessment import (
     OPENROUTER_BASE_URL,
     compact_evidence,
     load_dotenv,
-    json_completion,
     merge_evidence,
     parse_json_response,
     read_json,
@@ -46,8 +45,10 @@ MAX_QUERIES_PER_CATEGORY = int(os.getenv("OPENROUTER_PREBID_MAX_QUERIES_PER_CATE
 MAX_MANUAL_COVERAGE_ADDITIONS = int(os.getenv("OPENROUTER_PREBID_MANUAL_COVERAGE_ADDITIONS", "6"))
 DEFAULT_PREBID_WORKERS = 6
 DEFAULT_PREBID_PARALLEL_RETRIES = 3
+DEFAULT_PREBID_CONTEXT_CACHE = True
 APP_ROOT = Path(__file__).resolve().parent
 WATER_PBQ_PLAYBOOK_PATH = APP_ROOT / "playbooks" / "water_infrastructure_pbq_playbook.json"
+ENGINEERING_PBQ_PLAYBOOK_PATH = APP_ROOT / "playbooks" / "water_infrastructure_engineering_pbq_playbook.json"
 
 
 PBQ_STYLE_EXAMPLES = [
@@ -82,7 +83,11 @@ PBQ_STYLE_EXAMPLES = [
 
 
 def load_water_pbq_playbook() -> dict[str, Any]:
-    return read_json(WATER_PBQ_PLAYBOOK_PATH, {})
+    playbook = read_json(WATER_PBQ_PLAYBOOK_PATH, {})
+    engineering_playbook = read_json(ENGINEERING_PBQ_PLAYBOOK_PATH, {})
+    if engineering_playbook:
+        playbook["engineering_detail_playbook"] = engineering_playbook
+    return playbook
 
 
 def create_client() -> tuple[OpenAI, str, str]:
@@ -160,6 +165,7 @@ class PreBidQueryAgent:
         self.client, self.model, self.web_research_model = create_client()
         self.logs: list[dict[str, Any]] = []
         self.log_lock = threading.Lock()
+        self.search_lock = threading.Lock()
         self.progress_path = self.reports_dir / "prebid_queries.progress.json"
 
     def ensure_prebid_flags(self) -> None:
@@ -212,15 +218,18 @@ class PreBidQueryAgent:
         return evidence
 
     def searched_evidence(self, query: str, max_hits: int = 14) -> list[dict[str, Any]]:
-        os.environ["PDF_VISION_RAG_ROOT"] = str(self.project_root)
-        os.environ.setdefault("OPENROUTER_SEARCH_MODEL", os.getenv("OPENROUTER_SEARCH_MODEL", DEFAULT_SEARCH_MODEL))
-        searcher_module.PROJECT_ROOT = self.project_root
-        searcher_module.INDEXES_DIR = self.indexes_dir
-        searcher_module.TOPIC_INDEX_PATH = self.indexes_dir / "topic_index.json"
-        searcher_module.RELATIONSHIP_MAP_PATH = self.indexes_dir / "relationship_map.json"
-        searcher_module.SEARCH_RESULTS_DIR = self.indexes_dir / "search_results"
-        tree_searcher = searcher_module.TreeSearcher(query=query, dry_run=False, max_hits=max_hits)
-        result = tree_searcher.search()
+        # searcher.py uses module-level project paths, so protect this block while
+        # category agents run in parallel.
+        with self.search_lock:
+            os.environ["PDF_VISION_RAG_ROOT"] = str(self.project_root)
+            os.environ.setdefault("OPENROUTER_SEARCH_MODEL", os.getenv("OPENROUTER_SEARCH_MODEL", DEFAULT_SEARCH_MODEL))
+            searcher_module.PROJECT_ROOT = self.project_root
+            searcher_module.INDEXES_DIR = self.indexes_dir
+            searcher_module.TOPIC_INDEX_PATH = self.indexes_dir / "topic_index.json"
+            searcher_module.RELATIONSHIP_MAP_PATH = self.indexes_dir / "relationship_map.json"
+            searcher_module.SEARCH_RESULTS_DIR = self.indexes_dir / "search_results"
+            tree_searcher = searcher_module.TreeSearcher(query=query, dry_run=False, max_hits=max_hits)
+            result = tree_searcher.search()
         by_triplet = {
             (topic.get("topic_name"), topic.get("document_name"), int(topic.get("page_no") or 0)): topic
             for topic in self.topics
@@ -429,42 +438,34 @@ Return JSON with summary, findings, citations, and limits.
             "and clauses requiring bidder query wording."
         )
 
-    def playbook_focus(self, category: dict[str, Any]) -> dict[str, Any]:
-        category_id = category["id"]
-        focus_keys = {
-            "qualification_eligibility": ["industry_norms", "legal_risk_checklist"],
-            "scope_boq_missing_items": ["standard_missing_data_checklist", "commercial_risk_checklist", "technical_execution_checklist"],
-            "drawings_surveys_and_design_data": ["standard_missing_data_checklist", "technical_execution_checklist"],
-            "site_access_constraints": ["standard_missing_data_checklist", "technical_execution_checklist", "legal_risk_checklist"],
-            "technical_specification_conflicts": ["technical_execution_checklist", "standard_missing_data_checklist"],
-            "existing_assets_om_major_maintenance": ["o_and_m_checklist", "standard_missing_data_checklist", "commercial_risk_checklist"],
-            "schedule_milestones_completion": ["o_and_m_checklist", "commercial_risk_checklist", "legal_risk_checklist"],
-            "payment_security_cashflow": ["commercial_risk_checklist", "industry_norms", "legal_risk_checklist"],
-            "insurance_taxes_approvals": ["legal_risk_checklist", "commercial_risk_checklist", "industry_norms"],
-            "legal_and_risk_allocation": ["legal_risk_checklist", "industry_norms"],
-            "price_escalation_currency": ["commercial_risk_checklist", "industry_norms", "o_and_m_checklist"],
-        }
-        focus = {
-            "manual_pbq_style": self.playbook.get("manual_pbq_style", {}),
-            "coverage_rules": self.playbook.get("coverage_rules", []),
-        }
-        for key in focus_keys.get(category_id, []):
-            focus[key] = self.playbook.get(key, [])
-        return focus
+    def playbook_context(self) -> dict[str, Any]:
+        return self.playbook
 
-    def specialist_prompt(self, category: dict[str, Any], evidence: list[dict[str, Any]], step_results: list[dict[str, Any]]) -> str:
+    def context_cache_enabled(self) -> bool:
+        value = os.getenv("OPENROUTER_PREBID_CONTEXT_CACHE", "1" if DEFAULT_PREBID_CONTEXT_CACHE else "0")
+        return value.strip().lower() not in {"0", "false", "no", "off"}
+
+    def cache_session_id(self) -> str:
+        engineering = self.playbook.get("engineering_detail_playbook", {})
+        parts = [
+            "prebid",
+            self.project_root.name,
+            str(self.playbook.get("playbook_id", "water_infrastructure_pbq_playbook")),
+            str(self.playbook.get("version", "unknown")),
+            str(engineering.get("playbook_id", "engineering")),
+            str(engineering.get("version", "unknown")),
+        ]
+        return "-".join(re.sub(r"[^a-zA-Z0-9_.:-]+", "-", part).strip("-") for part in parts if part)[:256]
+
+    def cached_context_block(self) -> str:
         return f"""
-You are a dedicated Pre-Bid Query Document Generator for the bidder.
-Your job is to create PBQ-style bidder queries for one mandatory audit category.
+Stable reusable PBQ context. This block is intentionally identical across PBQ category calls for prompt caching.
 
-Audit category:
-{json.dumps(category, ensure_ascii=False)}
+Full reusable generalized water-infrastructure PBQ playbook:
+{json.dumps(self.playbook_context(), ensure_ascii=False)}
 
 PBQ wording examples to imitate:
 {json.dumps(PBQ_STYLE_EXAMPLES, ensure_ascii=False)}
-
-Reusable generalized water-infrastructure PBQ playbook focus for this category:
-{json.dumps(self.playbook_focus(category), ensure_ascii=False)}
 
 Mandatory query test:
 {json.dumps(PBQ_MANDATORY_QUERY_TEST, ensure_ascii=False)}
@@ -480,6 +481,24 @@ Send-ready wording rules:
 
 Structured fields:
 {json.dumps(PBQ_STRUCTURED_FIELDS, ensure_ascii=False)}
+
+Rules for using this cached context:
+- Read the full reusable playbook before drafting, verifying, or adding manual coverage rows.
+- Use the playbook as bidder intelligence and a coverage checklist, not as project fact.
+- Do not copy or infer any project-specific fact from the playbook.
+- Generate rows only when supported by project/tender evidence or a material absence after search.
+- Prefer concrete document/page/clause references from evidence; use "-" when unknown instead of inventing.
+""".strip()
+
+    def specialist_prompt(self, category: dict[str, Any], evidence: list[dict[str, Any]], step_results: list[dict[str, Any]]) -> str:
+        return f"""
+You are a dedicated Pre-Bid Query Document Generator for the bidder.
+Your job is to create PBQ-style bidder queries for one mandatory audit category.
+
+Audit category:
+{json.dumps(category, ensure_ascii=False)}
+
+Use the cached reusable PBQ context supplied before this dynamic request.
 
 Evidence gathered from flagged topics, fresh search, and inspected project map:
 {json.dumps(compact_evidence(evidence, limit=MAX_EVIDENCE), ensure_ascii=False)}
@@ -523,7 +542,7 @@ Available actions. Return exactly one JSON object:
 
 Rules:
 - Apply the mandatory query test before including any row. If a candidate fails the test, omit it.
-- Use the reusable playbook as bidder intelligence and coverage checklist, not as project fact.
+- Read the full reusable playbook before drafting. Use it as bidder intelligence and coverage checklist, not as project fact.
 - Run two mental passes before answering: (1) deep commercial/legal/risk discovery and (2) manual tender-engineer PBQ coverage.
 - Do not filter out practical Medium-value clarification rows when they affect pricing, quantity, drawings, scope split, BOQ inclusion, design basis, site access, O&M, approval responsibility, or cash flow.
 - Use generic examples as quality calibration only; do not copy them as project facts.
@@ -538,7 +557,7 @@ Rules:
 - Do not include weak "please clarify" rows unless the exact ambiguity and requested action are stated.
 - Prefer concrete clause/page fields, but use "-" when not available.
 - Do not use web research as contractual proof.
-- Return no more than {MAX_QUERIES_PER_CATEGORY} queries for this category; choose the mandatory/high-impact rows plus practical manual-PBQ rows that the playbook says a bidder normally needs before pricing/submission.
+- Return no more than {MAX_QUERIES_PER_CATEGORY} queries for this category; choose the mandatory/high-impact rows plus practical manual-PBQ rows that the full playbook says a bidder normally needs before pricing/submission.
 """.strip()
 
     def verifier_prompt(self, category: dict[str, Any], draft: dict[str, Any], evidence: list[dict[str, Any]], step_results: list[dict[str, Any]]) -> str:
@@ -557,8 +576,7 @@ Evidence:
 Tool results:
 {json.dumps(step_results[-8:], ensure_ascii=False)}
 
-Reusable generalized water-infrastructure PBQ playbook focus for this category:
-{json.dumps(self.playbook_focus(category), ensure_ascii=False)}
+Use the cached reusable PBQ context supplied before this dynamic request.
 
 Mandatory query test:
 {json.dumps(PBQ_MANDATORY_QUERY_TEST, ensure_ascii=False)}
@@ -631,8 +649,7 @@ Category:
 Already verified query rows for this category:
 {json.dumps(verified_queries, ensure_ascii=False)}
 
-Generalized playbook focus:
-{json.dumps(self.playbook_focus(category), ensure_ascii=False)}
+Use the cached reusable PBQ context supplied before this dynamic request.
 
 Evidence:
 {json.dumps(compact_evidence(evidence, limit=MAX_EVIDENCE), ensure_ascii=False)}
@@ -674,13 +691,94 @@ Rules:
 """.strip()
 
     def call_json(self, prompt: str, system: str) -> dict[str, Any]:
-        return json_completion(
-            self.client,
-            self.model,
-            prompt,
-            system,
-            int(os.getenv("OPENROUTER_PREBID_AGENT_MAX_TOKENS", os.getenv("OPENROUTER_AGENT_MAX_TOKENS", str(DEFAULT_AGENT_MAX_TOKENS)))),
-        )
+        max_tokens = int(os.getenv("OPENROUTER_PREBID_AGENT_MAX_TOKENS", os.getenv("OPENROUTER_AGENT_MAX_TOKENS", str(DEFAULT_AGENT_MAX_TOKENS))))
+        response = self.cached_chat_completion(prompt, system, max_tokens)
+        content = response.choices[0].message.content or "{}"
+        try:
+            return parse_json_response(content)
+        except Exception as first_error:
+            self.log(
+                "PBQ JSON response was malformed; asking model to repair the same output.",
+                detail={"error": str(first_error)},
+            )
+            return self.repair_json(content, str(first_error), max_tokens)
+
+    def cached_chat_completion(self, prompt: str, system: str, max_tokens: int):
+        cache_enabled = self.context_cache_enabled()
+        user_content: Any
+        extra_body: dict[str, Any] = {"session_id": self.cache_session_id()}
+        if cache_enabled:
+            cache_control: dict[str, str] = {"type": "ephemeral"}
+            cache_ttl = os.getenv("OPENROUTER_PREBID_CACHE_TTL", "").strip()
+            if cache_ttl:
+                cache_control["ttl"] = cache_ttl
+            user_content = [
+                {
+                    "type": "text",
+                    "text": self.cached_context_block(),
+                    "cache_control": cache_control,
+                },
+                {
+                    "type": "text",
+                    "text": prompt,
+                },
+            ]
+        else:
+            user_content = self.cached_context_block() + "\n\nDynamic request:\n" + prompt
+
+        kwargs: dict[str, Any] = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user_content},
+            ],
+            "temperature": 0,
+            "response_format": {"type": "json_object"},
+            "max_tokens": max_tokens,
+            "extra_body": extra_body,
+        }
+        return self.client.chat.completions.create(**kwargs)
+
+    def repair_json(self, malformed_content: str, parser_error: str, max_tokens: int) -> dict[str, Any]:
+        repair_content = malformed_content
+        repair_error = parser_error
+        for _ in range(3):
+            repair_prompt = f"""
+Repair this malformed model output into valid JSON only.
+
+Exact parser error to fix:
+{repair_error}
+
+Required output:
+- valid JSON object only
+- no markdown fences
+- no comments
+- double-quote every object key and string
+- close any unterminated string
+- insert missing commas between adjacent properties, objects, and array items
+- remove trailing commas
+- preserve all fields and meanings that can be recovered
+
+Malformed output:
+{repair_content}
+""".strip()
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are a JSON repair engine. Return only one valid JSON object."},
+                    {"role": "user", "content": repair_prompt},
+                ],
+                temperature=0,
+                response_format={"type": "json_object"},
+                max_tokens=max_tokens,
+                extra_body={"session_id": self.cache_session_id()},
+            )
+            repair_content = response.choices[0].message.content or "{}"
+            try:
+                return parse_json_response(repair_content)
+            except Exception as exc:
+                repair_error = str(exc)
+        raise ValueError(f"Model returned malformed JSON and repair failed: {repair_error}")
 
     def audit_category(self, category: dict[str, Any]) -> dict[str, Any]:
         self.log(f"Starting mandatory PBQ audit category: {category['title']}", category["id"])
@@ -851,6 +949,7 @@ Rules:
         workers = min(workers, len(MANDATORY_AUDIT_CATEGORIES))
         self.log(f"Mandatory audit will cover all configured gap categories using {workers} parallel category worker(s) before creating the final PBQ table.")
         sections_by_id: dict[str, dict[str, Any]] = {}
+        failures: list[dict[str, str]] = []
         with ThreadPoolExecutor(max_workers=workers) as executor:
             futures = {
                 executor.submit(self.audit_category_with_retries, category): category
@@ -858,7 +957,24 @@ Rules:
             }
             for future in as_completed(futures):
                 category = futures[future]
-                sections_by_id[category["id"]] = future.result()
+                try:
+                    sections_by_id[category["id"]] = future.result()
+                except Exception as exc:
+                    failures.append({"category_id": category["id"], "title": category["title"], "error": str(exc)})
+                    self.log(f"PBQ audit category failed after retries: {category['title']}: {exc}", category["id"])
+        if failures:
+            write_json(
+                self.progress_path,
+                {
+                    "report_type": "prebid_queries",
+                    "status": "failed",
+                    "project_id": self.project_root.name,
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                    "failures": failures,
+                    "logs": self.logs,
+                },
+            )
+            raise RuntimeError(f"Pre-Bid Query generation failed for {len(failures)} category/categories: {failures}")
         sections = [
             sections_by_id[category["id"]]
             for category in MANDATORY_AUDIT_CATEGORIES
@@ -876,6 +992,12 @@ Rules:
                     "playbook_id": self.playbook.get("playbook_id", "-"),
                     "playbook_version": self.playbook.get("version", "-"),
                     "playbook_scope": self.playbook.get("derived_from", "General reusable PBQ playbook."),
+                    "engineering_playbook_id": self.playbook.get("engineering_detail_playbook", {}).get("playbook_id", "-"),
+                    "engineering_playbook_version": self.playbook.get("engineering_detail_playbook", {}).get("version", "-"),
+                    "full_playbook_ingestion": True,
+                    "context_cache_enabled": self.context_cache_enabled(),
+                    "context_cache_session_id": self.cache_session_id(),
+                    "context_cache_ttl": os.getenv("OPENROUTER_PREBID_CACHE_TTL", "provider default"),
                     "max_queries_per_category": MAX_QUERIES_PER_CATEGORY,
                     "max_manual_coverage_additions_per_category": MAX_MANUAL_COVERAGE_ADDITIONS,
                     "category_workers": workers,

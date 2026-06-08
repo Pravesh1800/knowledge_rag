@@ -1,0 +1,1119 @@
+{
+  "playbook_id": "water_infrastructure_engineering_pbq_playbook",
+  "version": "2026-06-08",
+  "purpose": "Reusable engineering-estimator PBQ checklist for water infrastructure tenders. This playbook is non-project-specific and is intended to generate detailed clause-level, drawing-level, BOQ-level, and design-basis pre-bid queries in addition to strategic risk PBQs.",
+  "core_principle": "For every detected scope element, ask what information a bidder needs to price, design, procure, construct, test, commission, operate, and legally accept that element. If required information is missing, unclear, inconsistent, not linked to BOQ/payment, or only available as non-editable drawings, raise a PBQ row.",
+  "generation_mode": {
+    "name": "engineering_detail_coverage",
+    "instruction": "Do not limit output to top risks. Generate all practical engineering, BOQ, drawing, design, site, utility, O&M, and interface clarification queries that are required for complete pricing and execution coverage."
+  },
+  "output_columns": [
+    "S. No.",
+    "Discipline",
+    "Scope Element",
+    "Tender Vol. / Section",
+    "Document Name",
+    "Page No.",
+    "Drawing / BOQ / Clause Ref.",
+    "Missing / Unclear Data",
+    "Bidder's Query",
+    "Why Needed",
+    "Expected Employer Action",
+    "Evidence Strength"
+  ],
+  "query_style": {
+    "tone": "Practical bidder query register wording, not narrative tender analysis.",
+    "preferred_openings": [
+      "Please provide...",
+      "Please confirm...",
+      "Please clarify...",
+      "Please include the same in BOQ...",
+      "Please provide the editable AutoCAD/DWG file...",
+      "Please review and confirm...",
+      "We understand that... Kindly confirm."
+    ],
+    "required_traits": [
+      "Ask one concrete question per row.",
+      "Reference the exact clause, page, drawing, schedule, BOQ item, or section when available.",
+      "Mention the exact missing detail or inconsistency.",
+      "State why the answer is needed for pricing, design, procurement, construction, O&M, schedule, responsibility, or compliance.",
+      "Use '-' where the reference is not available instead of inventing."
+    ],
+    "avoid": [
+      "Generic 'please clarify scope' questions.",
+      "High-level risk summaries without a requested employer action.",
+      "Merging separate engineering details only because they belong to the same broad scope.",
+      "Assuming dimensions, thickness, lengths, ratings, quantities, or responsibilities not stated in evidence."
+    ]
+  },
+  "coverage_rules": [
+    "Run this playbook after or alongside deep risk PBQ generation.",
+    "Do not cap rows based on elegance or brevity; coverage is more important than small row count.",
+    "Deduplicate only when the exact missing data and exact employer action are materially the same.",
+    "Keep separate rows for separate drawings, BOQ items, structures, pipelines, equipment groups, power interfaces, SCADA interfaces, O&M responsibilities, or payment mechanisms.",
+    "A valid row can be based on absence after search if the scope element is detected and the missing data is normally required for pricing/design/execution.",
+    "If evidence is indirect, mark evidence strength as absence_after_search or inferred rather than dropping the query.",
+    "When a drawing/specification references another annexure, DPR, schedule, GAD, calculation, list, or report that is not found, raise a missing-reference PBQ."
+  ],
+  "disciplines": [
+    {
+      "discipline": "Drawings and Reference Documents",
+      "detect_when_terms_found": [
+        "drawing",
+        "GAD",
+        "layout",
+        "L-section",
+        "plan",
+        "DPR",
+        "annexure",
+        "schedule",
+        "standard drawing",
+        "detail drawing",
+        "design report"
+      ],
+      "expected_data_fields": [
+        "editable AutoCAD/DWG files",
+        "complete drawing list",
+        "latest revision status",
+        "scale and coordinate reference",
+        "cross-reference to BOQ/payment item",
+        "missing annexures/DPR/schedules referenced by tender",
+        "general arrangement drawings",
+        "section/elevation/detail drawings",
+        "standard details for repeated items",
+        "as-built drawings for existing assets"
+      ],
+      "pbq_triggers": [
+        "PDF drawing available but editable DWG not provided",
+        "drawing references DPR/annexure/schedule not found in uploaded tender set",
+        "drawing title/revision/sheet number conflicts with tender reference",
+        "drawing shows scope item but BOQ/payment item is not clear",
+        "layout exists but dimensions/elevations/coordinates are missing or unreadable"
+      ],
+      "query_templates": [
+        "Please provide editable AutoCAD/DWG files for the tender drawings to enable accurate quantity take-off and design coordination.",
+        "Please provide the referenced DPR/annexure/schedule, as it is required to understand the design basis and price the scope.",
+        "Please confirm the applicable latest revision of the drawing and whether bidders should follow the drawing or the tender specification in case of conflict.",
+        "Please confirm the BOQ item/payment mechanism for the scope shown in the drawing."
+      ]
+    },
+    {
+      "discipline": "Pipeline and Transmission Mains",
+      "detect_when_terms_found": [
+        "pipeline",
+        "rising main",
+        "feeder main",
+        "transmission main",
+        "MS pipe",
+        "DI pipe",
+        "HDPE pipe",
+        "pipe line",
+        "chainage",
+        "L-section",
+        "HGL",
+        "invert level"
+      ],
+      "expected_data_fields": [
+        "alignment and chainage",
+        "pipe length by diameter/material/class",
+        "wall thickness or pressure class",
+        "material grade",
+        "internal lining",
+        "external coating/wrapping",
+        "joint type",
+        "laying depth and cover",
+        "bedding and backfilling details",
+        "hydraulic design basis",
+        "testing pressure",
+        "crossing details",
+        "valves and chambers along route",
+        "thrust/anchor block details",
+        "BOQ item and payment basis"
+      ],
+      "pbq_triggers": [
+        "pipe diameter shown but thickness/class missing",
+        "route length or chainage differs across drawings/specifications/BOQ",
+        "pipe material or coating/lining not specified",
+        "crossing method or responsibility not specified",
+        "pipeline appurtenance shown in drawings but BOQ item unclear",
+        "hydraulic or surge basis not provided for pipe sizing"
+      ],
+      "query_templates": [
+        "Please provide the pipe wall thickness/pressure class and material grade for the specified pipeline section, as it is required for quantity take-off, procurement, and pricing.",
+        "Please confirm the final pipeline length/chainage to be considered for bidding where the drawings and BOQ/specification differ.",
+        "Please provide coating, lining, jointing, bedding, backfilling, and testing requirements for the pipeline section.",
+        "Please confirm whether crossings, valves, chambers, thrust blocks, and appurtenances shown along the pipeline are included in the quoted BOQ items or payable separately."
+      ]
+    },
+    {
+      "discipline": "Valves, Chambers, Thrust Blocks, and Appurtenances",
+      "detect_when_terms_found": [
+        "valve",
+        "sluice valve",
+        "butterfly valve",
+        "air valve",
+        "scour valve",
+        "chamber",
+        "valve chamber",
+        "thrust block",
+        "anchor block",
+        "bend",
+        "tee",
+        "dismantling joint",
+        "flow meter"
+      ],
+      "expected_data_fields": [
+        "type and size",
+        "quantity and location",
+        "pressure rating",
+        "material of construction",
+        "actuator/manual operation requirement",
+        "chamber dimensions",
+        "structural details and reinforcement",
+        "cover slab/manhole/ladder/ventilation details",
+        "standard drawing reference",
+        "BOQ item/payment basis"
+      ],
+      "pbq_triggers": [
+        "valves or chambers shown in drawings but quantities/locations not tabulated",
+        "valve rating/MOC/actuation not specified",
+        "chamber dimensions/reinforcement details missing",
+        "thrust/anchor block sizing basis missing",
+        "BOQ inclusion of appurtenances unclear"
+      ],
+      "query_templates": [
+        "Please provide the valve schedule with type, size, pressure rating, MOC, operation type, quantity, and location.",
+        "Please provide valve chamber dimensions, structural details, and standard drawings for pricing and construction.",
+        "Please confirm whether thrust blocks, anchor blocks, bends, tees, dismantling joints, and valve chambers are included in the BOQ or payable separately."
+      ]
+    },
+    {
+      "discipline": "Intake Works and Raw Water Pumping",
+      "detect_when_terms_found": [
+        "intake",
+        "intake well",
+        "jack well",
+        "approach bridge",
+        "raw water pump",
+        "screen",
+        "trash rack",
+        "river",
+        "HFL",
+        "LWL",
+        "scour",
+        "pump house"
+      ],
+      "expected_data_fields": [
+        "hydrology data",
+        "HFL/LWL/MWL",
+        "scour depth and river velocity",
+        "geotechnical data",
+        "approach bridge GAD",
+        "intake well structural dimensions",
+        "screen type/opening/MOC/operation",
+        "pump duty point/head/discharge/efficiency",
+        "motor rating and power supply",
+        "standby philosophy",
+        "crane/hoist requirements",
+        "dewatering/cofferdam/temporary works responsibility",
+        "BOQ/payment basis"
+      ],
+      "pbq_triggers": [
+        "hydrology or geotechnical data missing",
+        "screen details missing",
+        "pump head/discharge/standby/motor rating conflicts or missing",
+        "temporary works/cofferdam/dewatering responsibility unclear",
+        "approach bridge or intake GAD incomplete"
+      ],
+      "query_templates": [
+        "Please provide hydrological and geotechnical data for the intake location, including HFL/LWL, scour, river velocity, and bore logs.",
+        "Please provide intake screen details including number, duty/standby philosophy, opening size, MOC, cleaning arrangement, and disposal arrangement.",
+        "Please confirm raw water pump duty point, head, discharge, efficiency, motor rating, and standby configuration to be considered for bidding."
+      ]
+    },
+    {
+      "discipline": "Water Treatment Plant Process and Civil Units",
+      "detect_when_terms_found": [
+        "WTP",
+        "water treatment plant",
+        "clarifier",
+        "filter",
+        "rapid gravity",
+        "chemical",
+        "chlorine",
+        "sludge",
+        "backwash",
+        "clear water reservoir",
+        "CWR",
+        "process design"
+      ],
+      "expected_data_fields": [
+        "raw water quality data",
+        "treated water quality criteria",
+        "design flow and peak factor",
+        "process design basis",
+        "unit sizing criteria",
+        "hydraulic profile",
+        "chemical dosing basis",
+        "sludge handling and disposal scope",
+        "backwash system design",
+        "civil GADs and structural details",
+        "process/mechanical equipment list",
+        "testing and performance guarantee criteria",
+        "BOQ/payment basis"
+      ],
+      "pbq_triggers": [
+        "raw water quality or seasonal variation data missing",
+        "design flow/peak flow conflicts",
+        "process unit sizing basis missing",
+        "chemical dosing or consumables responsibility unclear",
+        "sludge/backwash disposal scope unclear",
+        "civil/process equipment scope not linked to BOQ"
+      ],
+      "query_templates": [
+        "Please provide raw water quality data, seasonal variation, and design basis to enable process design and chemical consumption estimation.",
+        "Please confirm the design flow, peak hydraulic flow, and process unit sizing criteria to be adopted for the WTP.",
+        "Please clarify sludge handling, backwash recovery/disposal, and chemical dosing scope including BOQ/payment provisions."
+      ]
+    },
+    {
+      "discipline": "Pumping Stations and Electro-Mechanical Equipment",
+      "detect_when_terms_found": [
+        "pump",
+        "pumping station",
+        "booster",
+        "motor",
+        "crane",
+        "EOT",
+        "panel",
+        "VFD",
+        "MCC",
+        "surge",
+        "pressure vessel"
+      ],
+      "expected_data_fields": [
+        "pump duty point",
+        "system head curve",
+        "efficiency requirements",
+        "duty/standby philosophy",
+        "motor rating",
+        "VFD/starter requirement",
+        "surge analysis and protection details",
+        "crane/hoist capacity",
+        "equipment layout",
+        "approved makes",
+        "testing requirements",
+        "BOQ/payment basis"
+      ],
+      "pbq_triggers": [
+        "pump head/discharge/motor rating missing or inconsistent",
+        "system head curve or surge analysis missing",
+        "duty/standby philosophy unclear",
+        "VFD/starter/control philosophy missing",
+        "equipment list not linked to BOQ"
+      ],
+      "query_templates": [
+        "Please provide pump data sheets including duty point, head, discharge, efficiency, motor rating, and duty/standby configuration.",
+        "Please provide system head curves and surge analysis/design basis for pump and pipeline sizing.",
+        "Please confirm whether VFDs/starters, panels, cranes/hoists, surge vessels, and accessories are included in the BOQ/payment schedule."
+      ]
+    },
+    {
+      "discipline": "Electrical, HT Line, Substation, and Power Supply",
+      "detect_when_terms_found": [
+        "HT",
+        "substation",
+        "transformer",
+        "feeder",
+        "power supply",
+        "electrical",
+        "MCC",
+        "PCC",
+        "cable",
+        "DG",
+        "metering",
+        "utility"
+      ],
+      "expected_data_fields": [
+        "voltage level",
+        "sanctioned load",
+        "power supply source",
+        "HT line route and length",
+        "substation scope",
+        "transformer rating",
+        "metering arrangement",
+        "feeder bay scope",
+        "utility approval responsibility",
+        "cable sizing/routing",
+        "earthing/lightning protection",
+        "backup power/DG scope",
+        "BOQ/payment basis"
+      ],
+      "pbq_triggers": [
+        "HT line route/length/source missing",
+        "utility approval and cost responsibility unclear",
+        "substation/transformer/metering scope unclear",
+        "electrical single-line details missing",
+        "BOQ/payment item for power supply works unclear"
+      ],
+      "query_templates": [
+        "Please provide HT power supply details including source point, voltage level, sanctioned load, route length, feeder bay/metering scope, and utility approval responsibility.",
+        "Please clarify substation and transformer scope including ratings, layout, protection, metering, earthing, and BOQ/payment provisions.",
+        "Please confirm whether statutory utility charges, approvals, deposits, and HT line works are in bidder scope or employer scope."
+      ]
+    },
+    {
+      "discipline": "SCADA, PLC, Instrumentation, and Automation",
+      "detect_when_terms_found": [
+        "SCADA",
+        "PLC",
+        "RTU",
+        "instrumentation",
+        "flow meter",
+        "pressure transmitter",
+        "level transmitter",
+        "software",
+        "server",
+        "communication",
+        "protocol",
+        "I/O"
+      ],
+      "expected_data_fields": [
+        "SCADA architecture",
+        "PLC/RTU list",
+        "I/O list",
+        "instrument schedule",
+        "tag list",
+        "communication protocol",
+        "server/client/workstation scope",
+        "software license scope",
+        "integration with existing systems",
+        "network/fiber/radio/GSM scope",
+        "cybersecurity/backup requirements",
+        "approved makes",
+        "BOQ/payment basis"
+      ],
+      "pbq_triggers": [
+        "SCADA architecture or integration scope missing",
+        "instrument quantity/tag list/I/O list missing",
+        "software license/server scope unclear",
+        "communication protocol and network responsibility unclear",
+        "SCADA scope shown in specs but BOQ/payment item unclear"
+      ],
+      "query_templates": [
+        "Please provide SCADA architecture, PLC/RTU list, I/O list, tag list, communication protocol, software license scope, and integration requirements.",
+        "Please confirm instrument quantities, locations, approved makes, calibration requirements, and BOQ/payment provisions.",
+        "Please clarify bidder responsibility for integration with existing SCADA/IT systems, communication network, servers, cybersecurity, and licenses."
+      ]
+    },
+    {
+      "discipline": "BOQ, Quantity, and Payment Mechanism",
+      "detect_when_terms_found": [
+        "BOQ",
+        "bill of quantities",
+        "quantity",
+        "payment",
+        "billing break-up",
+        "schedule",
+        "item",
+        "rate",
+        "lump sum",
+        "variation",
+        "included"
+      ],
+      "expected_data_fields": [
+        "BOQ item reference for each scope element",
+        "quantity basis",
+        "measurement method",
+        "payment milestone",
+        "included/excluded scope",
+        "provisional quantity treatment",
+        "variation/change order treatment",
+        "supply/erection/testing split",
+        "tax/duty treatment"
+      ],
+      "pbq_triggers": [
+        "scope item present in drawings/specs but absent from BOQ",
+        "quantity or length differs between BOQ and drawings",
+        "payment percentage or milestone unclear",
+        "all-inclusive scope unclear",
+        "variation/payment mechanism missing for uncertain scope"
+      ],
+      "query_templates": [
+        "Please confirm the BOQ item/payment mechanism for the specified scope item shown in the tender drawings/specifications.",
+        "Please reconcile the quantity/length difference between the BOQ and tender drawings/specifications and confirm the quantity to be considered for bidding.",
+        "Please clarify whether the item is included in the quoted lump-sum scope or payable separately as a BOQ/variation item."
+      ]
+    },
+    {
+      "discipline": "O&M, Handover, Testing, and Performance",
+      "detect_when_terms_found": [
+        "O&M",
+        "operation",
+        "maintenance",
+        "trial run",
+        "commissioning",
+        "performance guarantee",
+        "defect liability",
+        "handover",
+        "takeover",
+        "complaint",
+        "leakage",
+        "water quality"
+      ],
+      "expected_data_fields": [
+        "O&M start date",
+        "assets included in O&M",
+        "existing asset takeover condition",
+        "trial run duration and criteria",
+        "performance guarantee tests",
+        "chemical/power/consumables responsibility",
+        "routine vs major repair split",
+        "manpower requirements",
+        "reporting requirements",
+        "payment/escalation mechanism",
+        "handover/takeover protocol"
+      ],
+      "pbq_triggers": [
+        "O&M asset boundary unclear",
+        "existing asset baseline/condition assessment missing",
+        "trial run criteria or repeated trial cost unclear",
+        "consumables/power/chemical responsibility unclear",
+        "major maintenance and replacement responsibility unclear",
+        "O&M payment/escalation mechanism unclear"
+      ],
+      "query_templates": [
+        "Please confirm the exact assets included in O&M scope and the date from which O&M responsibility starts for each asset.",
+        "Please provide the existing asset condition assessment and handover/takeover protocol before O&M responsibility begins.",
+        "Please clarify responsibility and payment mechanism for power, chemicals, consumables, major repairs, replacements, sludge/waste disposal, and repeated trial runs."
+      ]
+    },
+    {
+      "discipline": "Site, Access, Utilities, Approvals, and Interfaces",
+      "detect_when_terms_found": [
+        "site",
+        "land",
+        "right of way",
+        "ROW",
+        "permission",
+        "approval",
+        "utility",
+        "crossing",
+        "road",
+        "railway",
+        "canal",
+        "forest",
+        "traffic",
+        "approach"
+      ],
+      "expected_data_fields": [
+        "land availability",
+        "ROW status",
+        "access road details",
+        "working space",
+        "utility shifting responsibility",
+        "crossing permission status",
+        "traffic diversion responsibility",
+        "statutory approval responsibility",
+        "interface with existing assets",
+        "shutdown permissions",
+        "compensation/variation mechanism"
+      ],
+      "pbq_triggers": [
+        "land/ROW status unclear",
+        "utility shifting scope/cost/responsibility unclear",
+        "crossing permissions not provided",
+        "access/working space constraints unclear",
+        "shutdown/interface responsibility unclear"
+      ],
+      "query_templates": [
+        "Please provide land/ROW availability status, access constraints, and working-space details for the specified work location.",
+        "Please confirm responsibility, cost, and schedule impact treatment for utility shifting, road/rail/canal/forest crossings, and statutory approvals.",
+        "Please provide details of required shutdowns, interfaces with existing assets, and employer support for permissions."
+      ]
+    },
+    {
+      "discipline": "Civil Structures and Buildings",
+      "detect_when_terms_found": [
+        "building",
+        "civil",
+        "RCC",
+        "foundation",
+        "structure",
+        "tank",
+        "reservoir",
+        "sump",
+        "pump house",
+        "BPT",
+        "retaining wall",
+        "plinth"
+      ],
+      "expected_data_fields": [
+        "GAD",
+        "structural design basis",
+        "foundation/geotechnical data",
+        "dimensions and levels",
+        "reinforcement/detail drawings",
+        "loads and design codes",
+        "architectural/finishing scope",
+        "waterproofing",
+        "drainage/dewatering",
+        "BOQ/payment basis"
+      ],
+      "pbq_triggers": [
+        "GAD available but structural/detail drawings missing",
+        "dimensions/levels/geotechnical data missing",
+        "architectural/finishing/special coating scope unclear",
+        "foundation design assumptions unclear",
+        "BOQ/payment item unclear"
+      ],
+      "query_templates": [
+        "Please provide GAD, structural design basis, geotechnical data, dimensions, levels, and reinforcement/detail drawings for the civil structure.",
+        "Please confirm finishing, waterproofing, drainage, dewatering, and architectural scope along with BOQ/payment provisions.",
+        "Please clarify foundation design assumptions and responsibility for changes due to actual soil/subsurface conditions."
+      ]
+    },
+    {
+      "discipline": "Pre-Qualification, JV, and Bidder Eligibility",
+      "detect_when_terms_found": [
+        "pre-qualification",
+        "qualification",
+        "eligibility",
+        "qualifying requirement",
+        "similar work",
+        "experience",
+        "turnover",
+        "net worth",
+        "financial capacity",
+        "technical capacity",
+        "joint venture",
+        "JV",
+        "consortium",
+        "lead partner",
+        "parent company",
+        "subsidiary",
+        "subcontractor",
+        "registration",
+        "blacklisting",
+        "debarment",
+        "bid capacity"
+      ],
+      "expected_data_fields": [
+        "eligible bidder entity types",
+        "similar work definition",
+        "lookback period",
+        "minimum completed work threshold",
+        "ongoing work acceptance",
+        "physical quantity threshold",
+        "financial turnover threshold",
+        "net worth requirement",
+        "bid capacity formula",
+        "JV member share and lead member requirements",
+        "parent/subsidiary credential acceptance",
+        "subcontractor credential acceptance",
+        "required certificate format",
+        "registration and blacklisting declaration requirements"
+      ],
+      "pbq_triggers": [
+        "similar work definition is broad or inconsistent",
+        "lookback period or completion cut-off is unclear",
+        "parent/subsidiary/JV credential treatment is silent",
+        "subcontractor experience acceptance or cap is unclear",
+        "certificate format or issuing authority is not specified",
+        "bid capacity formula inputs are missing or ambiguous"
+      ],
+      "query_templates": [
+        "Please clarify the eligible bidder entity types, similar work definition, lookback period, and accepted completion evidence for pre-qualification.",
+        "Please confirm whether parent company, subsidiary, JV member, consortium member, or specialist subcontractor credentials are acceptable for meeting the stated eligibility criteria.",
+        "Please provide the required certificate formats, issuing authority requirements, bid capacity formula inputs, and registration/blacklisting declarations."
+      ]
+    },
+    {
+      "discipline": "Bid Submission, Forms, and Technical Packet",
+      "detect_when_terms_found": [
+        "submission",
+        "technical bid",
+        "financial bid",
+        "packet",
+        "envelope",
+        "form",
+        "annexure",
+        "schedule",
+        "certificate",
+        "undertaking",
+        "affidavit",
+        "power of attorney",
+        "notarized",
+        "notarised",
+        "upload",
+        "e-procurement",
+        "hard copy",
+        "checklist"
+      ],
+      "expected_data_fields": [
+        "technical bid document checklist",
+        "financial bid document checklist",
+        "forms and schedules to be submitted",
+        "online/offline submission split",
+        "hard copy requirement",
+        "signing authority and power of attorney requirement",
+        "notarization/attestation requirement",
+        "certificate and undertaking formats",
+        "deviation statement format",
+        "supporting technical document list",
+        "submission deadline and sequence",
+        "bid security submission mode"
+      ],
+      "pbq_triggers": [
+        "technical packet checklist is incomplete",
+        "online and hard-copy submission requirements conflict",
+        "form/annexure referenced but not provided",
+        "signing/notarization/attestation requirement is unclear",
+        "deviation statement or supporting document format is missing",
+        "bid security submission mode conflicts across sections"
+      ],
+      "query_templates": [
+        "Please provide the complete technical and financial bid submission checklist, including forms, schedules, certificates, undertakings, and supporting documents.",
+        "Please confirm online submission, hard-copy submission, signing authority, notarization/attestation, and bid security submission requirements.",
+        "Please provide the missing referenced forms/annexures and the required format for deviations or clarifications."
+      ]
+    },
+    {
+      "discipline": "Commercial Terms, Securities, Advances, and Price Adjustment",
+      "detect_when_terms_found": [
+        "security deposit",
+        "performance security",
+        "bid security",
+        "EMD",
+        "bank guarantee",
+        "retention",
+        "mobilization advance",
+        "mobilisation advance",
+        "secured advance",
+        "payment",
+        "RA bill",
+        "price adjustment",
+        "escalation",
+        "indices",
+        "base date",
+        "GST",
+        "tax",
+        "duties",
+        "advance",
+        "deduction",
+        "withholding",
+        "probable amount"
+      ],
+      "expected_data_fields": [
+        "bid security amount and validity",
+        "performance security percentage and validity",
+        "retention percentage and release milestone",
+        "mobilization advance eligibility and recovery",
+        "secured advance eligibility and recovery",
+        "RA bill frequency and payment timeline",
+        "price adjustment formula and indices",
+        "base date for escalation",
+        "tax/GST/duty inclusion basis",
+        "O&M payment structure",
+        "deduction and withholding mechanism",
+        "bank guarantee formats"
+      ],
+      "pbq_triggers": [
+        "security percentage, amount, validity, or release milestone is unclear",
+        "advance payment eligibility or recovery is unclear",
+        "price adjustment formula, base date, or indices are missing",
+        "tax/duty inclusion and reimbursement treatment is unclear",
+        "payment milestone or RA bill timeline is not defined",
+        "bank guarantee format is referenced but not provided"
+      ],
+      "query_templates": [
+        "Please clarify bid security, performance security, retention, bank guarantee formats, validity periods, and release milestones.",
+        "Please confirm mobilization/secured advance eligibility, recovery mechanism, RA bill frequency, payment timeline, and deduction/withholding treatment.",
+        "Please provide the price adjustment formula, applicable indices, base date, and tax/GST/duty inclusion or reimbursement basis."
+      ]
+    },
+    {
+      "discipline": "Legal and Contract Conditions",
+      "detect_when_terms_found": [
+        "conditions of contract",
+        "GCC",
+        "SCC",
+        "FIDIC",
+        "arbitration",
+        "dispute",
+        "liability",
+        "indemnity",
+        "liquidated damages",
+        "LD",
+        "termination",
+        "force majeure",
+        "consequential loss",
+        "employer default",
+        "contractor default",
+        "change in law",
+        "extension of time",
+        "EOT",
+        "limitation of liability"
+      ],
+      "expected_data_fields": [
+        "applicable contract conditions hierarchy",
+        "order of precedence",
+        "dispute resolution forum and venue",
+        "arbitration rules",
+        "liability cap",
+        "excluded damages",
+        "indemnity scope",
+        "liquidated damages rate and cap",
+        "termination rights and cure period",
+        "force majeure relief",
+        "change in law treatment",
+        "extension of time procedure",
+        "employer default remedies"
+      ],
+      "pbq_triggers": [
+        "contract document hierarchy conflicts",
+        "liability cap or excluded damages are not defined",
+        "LD rate/cap or delay responsibility is unclear",
+        "termination/cure period and employer default remedies are unclear",
+        "force majeure, change in law, or EOT relief is incomplete",
+        "arbitration forum, venue, or rules are unclear"
+      ],
+      "query_templates": [
+        "Please confirm the applicable contract conditions, order of precedence, dispute resolution forum, arbitration rules, and venue.",
+        "Please clarify liability cap, excluded damages, indemnity scope, liquidated damages rate/cap, and delay responsibility.",
+        "Please confirm termination rights, cure periods, employer default remedies, force majeure relief, change in law treatment, and extension of time procedure."
+      ]
+    },
+    {
+      "discipline": "Insurance and Risk Cover",
+      "detect_when_terms_found": [
+        "insurance",
+        "CAR",
+        "EAR",
+        "marine insurance",
+        "third party",
+        "professional indemnity",
+        "workmen compensation",
+        "workers compensation",
+        "waiver of subrogation",
+        "deductible",
+        "policy",
+        "risk cover",
+        "insured value"
+      ],
+      "expected_data_fields": [
+        "required insurance policies",
+        "minimum insured value",
+        "policy period",
+        "defects liability coverage",
+        "O&M period coverage",
+        "deductible responsibility",
+        "named insured/additional insured requirements",
+        "waiver of subrogation requirement",
+        "professional indemnity applicability",
+        "third-party liability limit",
+        "proof of insurance submission timing"
+      ],
+      "pbq_triggers": [
+        "insurance types are listed without limits or insured values",
+        "policy period across construction, defects liability, and O&M is unclear",
+        "deductible responsibility is unclear",
+        "additional insured or waiver of subrogation requirement is missing",
+        "professional indemnity or design liability cover applicability is unclear"
+      ],
+      "query_templates": [
+        "Please provide the required insurance policies, minimum insured values, policy periods, third-party liability limits, and proof submission timing.",
+        "Please confirm deductible responsibility, additional insured requirements, waiver of subrogation, and coverage during defects liability/O&M periods.",
+        "Please clarify whether professional indemnity or design liability insurance is required and provide the minimum cover amount and period."
+      ]
+    },
+    {
+      "discipline": "Quality, Testing, Standards, and Guarantees",
+      "detect_when_terms_found": [
+        "quality",
+        "test",
+        "testing",
+        "inspection",
+        "acceptance",
+        "standard",
+        "IS code",
+        "CPHEEO",
+        "guarantee",
+        "performance test",
+        "PG test",
+        "treated water",
+        "raw water",
+        "turbidity",
+        "coliform",
+        "chlorine",
+        "sample",
+        "laboratory"
+      ],
+      "expected_data_fields": [
+        "applicable standards and codes",
+        "quality assurance plan requirement",
+        "inspection and test plan requirement",
+        "factory acceptance test requirement",
+        "site acceptance test requirement",
+        "performance guarantee parameters",
+        "sampling frequency and method",
+        "third-party inspection requirement",
+        "retest and rejection criteria",
+        "commissioning test duration",
+        "laboratory approval requirement",
+        "records and certificate formats"
+      ],
+      "pbq_triggers": [
+        "standards are referenced but exact edition or hierarchy is unclear",
+        "FAT/SAT/performance test scope or duration is missing",
+        "quality plan, ITP, sampling, or laboratory requirements are unclear",
+        "acceptance/rejection/retest criteria are not defined",
+        "guarantee parameters or proof method are incomplete"
+      ],
+      "query_templates": [
+        "Please provide applicable standards/codes, quality assurance plan requirements, inspection and test plan requirements, and certificate formats.",
+        "Please clarify FAT, SAT, commissioning, performance guarantee test duration, sampling frequency, and acceptance/rejection/retest criteria.",
+        "Please confirm third-party inspection, laboratory approval, and records submission requirements."
+      ]
+    },
+    {
+      "discipline": "Existing Assets, Rehabilitation, and Takeover Baseline",
+      "detect_when_terms_found": [
+        "existing",
+        "rehabilitation",
+        "repair",
+        "replacement",
+        "refurbishment",
+        "augmentation",
+        "interconnection",
+        "takeover",
+        "handover",
+        "asset register",
+        "condition assessment",
+        "shutdown",
+        "brownfield",
+        "tie-in",
+        "dismantling",
+        "salvage"
+      ],
+      "expected_data_fields": [
+        "existing asset inventory",
+        "condition assessment report",
+        "rehabilitation scope boundary",
+        "replacement/refurbishment criteria",
+        "tie-in and interconnection locations",
+        "shutdown availability and duration",
+        "dismantling and salvage responsibility",
+        "as-built drawings",
+        "baseline performance data",
+        "handover/takeover procedure",
+        "risk allocation for hidden defects",
+        "payment mechanism for additional repair"
+      ],
+      "pbq_triggers": [
+        "existing asset inventory or condition report is missing",
+        "rehabilitation/replacement boundary is unclear",
+        "tie-in, shutdown, or interconnection details are incomplete",
+        "hidden defect risk allocation is not defined",
+        "dismantling/salvage and additional repair payment responsibility is unclear"
+      ],
+      "query_templates": [
+        "Please provide existing asset inventory, condition assessment reports, as-built drawings, and baseline performance data for takeover/rehabilitation scope.",
+        "Please clarify rehabilitation, replacement, refurbishment, tie-in, shutdown, and interconnection responsibilities and constraints.",
+        "Please confirm hidden defect risk allocation, dismantling/salvage responsibility, and payment mechanism for additional repairs found during execution."
+      ]
+    },
+    {
+      "discipline": "Temporary Works and Construction Methodology",
+      "detect_when_terms_found": [
+        "temporary works",
+        "diversion",
+        "cofferdam",
+        "dewatering",
+        "shoring",
+        "barricading",
+        "traffic management",
+        "approach",
+        "staging",
+        "launching",
+        "lifting",
+        "excavation support",
+        "working platform",
+        "method statement",
+        "temporary access",
+        "temporary power"
+      ],
+      "expected_data_fields": [
+        "temporary works design responsibility",
+        "method statement approval process",
+        "traffic diversion requirements",
+        "dewatering scope and discharge permissions",
+        "excavation support/shoring requirement",
+        "temporary access and working platform requirement",
+        "temporary power and water responsibility",
+        "barricading and public safety requirements",
+        "lifting/launching constraints",
+        "temporary land availability",
+        "restoration requirements",
+        "payment basis for temporary works"
+      ],
+      "pbq_triggers": [
+        "temporary works responsibility or payment basis is unclear",
+        "traffic diversion, barricading, or public safety requirements are incomplete",
+        "dewatering and discharge permissions are unclear",
+        "temporary access, working platform, or temporary land is not defined",
+        "method statement approval process or lifting/launching constraints are missing"
+      ],
+      "query_templates": [
+        "Please clarify temporary works design responsibility, method statement approval process, and payment basis for temporary works.",
+        "Please provide requirements for traffic diversion, barricading, public safety, temporary access, working platforms, and restoration.",
+        "Please confirm dewatering scope, discharge permissions, temporary power/water responsibility, and lifting/launching constraints."
+      ]
+    },
+    {
+      "discipline": "Materials, MOC, Approved Makes, and Specification Conflicts",
+      "detect_when_terms_found": [
+        "material",
+        "MOC",
+        "grade",
+        "make",
+        "approved make",
+        "thickness",
+        "class",
+        "rating",
+        "aluminium",
+        "aluminum",
+        "copper",
+        "stainless steel",
+        "cast iron",
+        "ductile iron",
+        "epoxy",
+        "coating",
+        "lining",
+        "conflict",
+        "contradiction",
+        "busbar",
+        "insulator"
+      ],
+      "expected_data_fields": [
+        "material of construction",
+        "grade/class/rating",
+        "minimum thickness",
+        "coating/lining specification",
+        "approved makes list",
+        "equivalent make approval process",
+        "standard/code reference",
+        "shop drawing approval requirement",
+        "inspection and test certificate requirement",
+        "conflict resolution hierarchy",
+        "spare parts/material warranty requirement",
+        "BOQ item linkage"
+      ],
+      "pbq_triggers": [
+        "material grade/class/rating/thickness is missing or conflicting",
+        "approved makes list is missing, restrictive, or conflicts with specification",
+        "equivalent make approval process is unclear",
+        "coating/lining or test certificate requirement is incomplete",
+        "BOQ item and specification describe different materials or ratings"
+      ],
+      "query_templates": [
+        "Please clarify material of construction, grade/class/rating, minimum thickness, coating/lining, standards, and BOQ linkage for the specified item.",
+        "Please provide the approved makes list, equivalent make approval process, shop drawing approval requirements, and test certificate requirements.",
+        "Please confirm the order of precedence where BOQ, drawings, data sheets, and specifications conflict on material, make, rating, or thickness."
+      ]
+    },
+    {
+      "discipline": "Estimate Basis, Rate Analysis, and Cost Adequacy",
+      "detect_when_terms_found": [
+        "estimated cost",
+        "probable amount",
+        "SOR",
+        "schedule of rates",
+        "rate analysis",
+        "price break-up",
+        "cost",
+        "estimate",
+        "amount",
+        "O&M value",
+        "percentage",
+        "CAPEX",
+        "OPEX",
+        "lump sum",
+        "item rate",
+        "quoted rate"
+      ],
+      "expected_data_fields": [
+        "estimate basis",
+        "schedule of rates reference",
+        "rate analysis details",
+        "price break-up format",
+        "included/excluded cost components",
+        "CAPEX/OPEX split",
+        "O&M cost basis",
+        "lump-sum versus item-rate treatment",
+        "quantity variation treatment",
+        "tax and duty treatment in estimate",
+        "contingency/provisional sum treatment",
+        "payment item mapping"
+      ],
+      "pbq_triggers": [
+        "estimate/probable amount basis is not explained",
+        "rate analysis or schedule of rates reference is missing",
+        "CAPEX/OPEX or O&M price split is unclear",
+        "lump-sum versus item-rate risk allocation is unclear",
+        "quantity variation, provisional sum, or tax treatment is missing",
+        "price break-up format or payment item mapping is not provided"
+      ],
+      "query_templates": [
+        "Please provide the estimate basis, schedule of rates reference, rate analysis, and included/excluded cost components.",
+        "Please clarify CAPEX/OPEX split, O&M cost basis, lump-sum versus item-rate treatment, and quantity variation mechanism.",
+        "Please provide the required price break-up format, payment item mapping, tax/duty treatment, and provisional sum/contingency treatment."
+      ]
+    }
+  ],
+  "element_detection_rules": [
+    "Create a scope element when a topic, drawing, BOQ line, clause, or specification identifies a distinct asset, system, structure, equipment group, interface, or responsibility.",
+    "Attach all available references to the element: document name, page number, topic name, drawing number, BOQ item, clause number, section, and excerpt.",
+    "For each detected element, select the closest discipline checklist and evaluate expected_data_fields one by one.",
+    "Generate a PBQ for every expected field that is missing, contradictory, ambiguous, unreadable, not BOQ-linked, or not responsibility-linked.",
+    "If many fields are missing for one element, group closely related fields only when the employer can answer them together with one document/data sheet."
+  ],
+  "evidence_strength_values": {
+    "direct": "Tender evidence directly shows the ambiguity, conflict, missing field, or unclear responsibility.",
+    "inferred": "The scope element exists and the missing data is normally required, but absence is inferred from available evidence.",
+    "absence_after_search": "The system searched for the expected data and did not find it in indexed topics/evidence.",
+    "weak": "The evidence is incomplete or OCR/image extraction may be poor; keep row for human review if pricing/design relevance is high."
+  },
+  "discipline_priority_order": [
+    "Pre-Qualification, JV, and Bidder Eligibility",
+    "Bid Submission, Forms, and Technical Packet",
+    "Commercial Terms, Securities, Advances, and Price Adjustment",
+    "Legal and Contract Conditions",
+    "Insurance and Risk Cover",
+    "Estimate Basis, Rate Analysis, and Cost Adequacy",
+    "BOQ, Quantity, and Payment Mechanism",
+    "Materials, MOC, Approved Makes, and Specification Conflicts",
+    "Drawings and Reference Documents",
+    "Pipeline and Transmission Mains",
+    "Water Treatment Plant Process and Civil Units",
+    "Electrical, HT Line, Substation, and Power Supply",
+    "SCADA, PLC, Instrumentation, and Automation",
+    "Pumping Stations and Electro-Mechanical Equipment",
+    "Valves, Chambers, Thrust Blocks, and Appurtenances",
+    "O&M, Handover, Testing, and Performance",
+    "Quality, Testing, Standards, and Guarantees",
+    "Existing Assets, Rehabilitation, and Takeover Baseline",
+    "Temporary Works and Construction Methodology",
+    "Site, Access, Utilities, Approvals, and Interfaces",
+    "Intake Works and Raw Water Pumping",
+    "Civil Structures and Buildings"
+  ],
+  "quality_gate": [
+    "Every row must name a missing/unclear data item.",
+    "Every row must identify a scope element or reference.",
+    "Every row must ask for a concrete employer action.",
+    "Every row must explain why the answer is needed.",
+    "Do not reject a row only because it is Medium priority if it affects pricing, quantity take-off, design, procurement, execution, O&M, approvals, or responsibility.",
+    "Do not invent project facts from this playbook. The playbook defines what to check; project evidence defines what to ask."
+  ]
+}

@@ -1,0 +1,75 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Evidence Mesh</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <div class="brand">Evidence Mesh</div>
+          <div class="subtitle">Upload documents, build a knowledge graph, and ask grounded questions.</div>
+        </div>
+        <form id="project-form" class="new-project">
+          <input id="project-name" type="text" placeholder="Project name" />
+          <button type="submit">Create</button>
+        </form>
+      </header>
+
+      <section class="layout">
+        <aside class="panel">
+          <h2>Projects</h2>
+          <div id="projects" class="project-list"></div>
+        </aside>
+
+        <section class="workspace">
+          <div id="empty-state" class="empty">
+            Create or select a project to begin.
+          </div>
+
+          <div id="project-view" class="hidden">
+            <div class="project-head">
+              <div>
+                <h1 id="active-title"></h1>
+                <div id="active-stats" class="muted"></div>
+              </div>
+              <button id="refresh" type="button">Refresh</button>
+            </div>
+
+            <section class="panel">
+              <h2>Documents</h2>
+              <form id="upload-form" class="upload">
+                <input id="files" type="file" multiple />
+                <button type="submit">Upload</button>
+                <button id="build-index" type="button">Build Index + Relationships</button>
+              </form>
+              <div id="documents" class="documents"></div>
+            </section>
+
+            <section class="panel">
+              <h2>Pipeline</h2>
+              <div id="progress-label" class="status">Not started</div>
+              <div class="bar"><div id="progress-bar"></div></div>
+              <pre id="progress-json"></pre>
+            </section>
+
+            <section class="panel chat-panel">
+              <h2>Chat</h2>
+              <div id="chat-log" class="chat-log"></div>
+              <form id="chat-form" class="chat-form">
+                <input id="question" type="text" placeholder="Ask about the indexed documents" />
+                <button type="submit">Ask</button>
+              </form>
+            </section>
+          </div>
+        </section>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
+
+
