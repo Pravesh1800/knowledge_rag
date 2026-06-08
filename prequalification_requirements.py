@@ -27,7 +27,7 @@ from legal_assessment import (
 
 
 MAX_EVIDENCE = 28
-DEFAULT_PREQUAL_WORKERS = 6
+DEFAULT_PREQUAL_WORKERS = 7
 DEFAULT_PREQUAL_PARALLEL_RETRIES = 3
 
 
@@ -191,6 +191,7 @@ class PrequalificationRequirementsAgent:
         self.client, self.model = create_client()
         self.logs: list[dict[str, Any]] = []
         self.log_lock = threading.Lock()
+        self.search_lock = threading.Lock()
         self.progress_path = self.reports_dir / "prequalification_requirements.progress.json"
 
     def log(self, message: str, section_id: str | None = None, detail: dict[str, Any] | None = None) -> None:
@@ -214,15 +215,18 @@ class PrequalificationRequirementsAgent:
             )
 
     def searched_evidence(self, query: str, max_hits: int = 14) -> list[dict[str, Any]]:
-        os.environ["PDF_VISION_RAG_ROOT"] = str(self.project_root)
-        os.environ.setdefault("OPENROUTER_SEARCH_MODEL", os.getenv("OPENROUTER_SEARCH_MODEL", DEFAULT_SEARCH_MODEL))
-        searcher_module.PROJECT_ROOT = self.project_root
-        searcher_module.INDEXES_DIR = self.indexes_dir
-        searcher_module.TOPIC_INDEX_PATH = self.indexes_dir / "topic_index.json"
-        searcher_module.RELATIONSHIP_MAP_PATH = self.indexes_dir / "relationship_map.json"
-        searcher_module.SEARCH_RESULTS_DIR = self.indexes_dir / "search_results"
-        tree_searcher = searcher_module.TreeSearcher(query=query, dry_run=False, max_hits=max_hits)
-        result = tree_searcher.search()
+        # searcher.py uses module-level project paths, so protect this setup while
+        # all seven pre-qualification sections run in parallel.
+        with self.search_lock:
+            os.environ["PDF_VISION_RAG_ROOT"] = str(self.project_root)
+            os.environ.setdefault("OPENROUTER_SEARCH_MODEL", os.getenv("OPENROUTER_SEARCH_MODEL", DEFAULT_SEARCH_MODEL))
+            searcher_module.PROJECT_ROOT = self.project_root
+            searcher_module.INDEXES_DIR = self.indexes_dir
+            searcher_module.TOPIC_INDEX_PATH = self.indexes_dir / "topic_index.json"
+            searcher_module.RELATIONSHIP_MAP_PATH = self.indexes_dir / "relationship_map.json"
+            searcher_module.SEARCH_RESULTS_DIR = self.indexes_dir / "search_results"
+            tree_searcher = searcher_module.TreeSearcher(query=query, dry_run=False, max_hits=max_hits)
+            result = tree_searcher.search()
         by_triplet = {
             (topic.get("topic_name"), topic.get("document_name"), int(topic.get("page_no") or 0)): topic
             for topic in self.topics
