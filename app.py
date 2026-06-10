@@ -21,15 +21,35 @@ from fastapi.staticfiles import StaticFiles
 from openai import OpenAI
 from pydantic import BaseModel
 
+from bid_process_evaluation import (
+    generate_bid_process_evaluation,
+    load_bid_process_evaluation,
+    load_bid_process_evaluation_progress,
+)
 from commercial_strategy import (
     generate_commercial_strategy,
     load_commercial_strategy,
     load_commercial_strategy_progress,
 )
+from discrepancy_report import (
+    generate_discrepancy_report,
+    load_discrepancy_report,
+    load_discrepancy_report_progress,
+)
 from financial_bonds import (
     generate_financial_bonds,
     load_financial_bonds,
     load_financial_bonds_progress,
+)
+from financial_liabilities_penalties import (
+    generate_financial_liabilities_penalties,
+    load_financial_liabilities_penalties,
+    load_financial_liabilities_penalties_progress,
+)
+from key_information import (
+    generate_key_information,
+    load_key_information,
+    load_key_information_progress,
 )
 from legal_assessment import (
     generate_legal_assessment,
@@ -45,6 +65,16 @@ from prequalification_requirements import (
     generate_prequalification_requirements,
     load_prequalification_requirements,
     load_prequalification_requirements_progress,
+)
+from project_background import (
+    generate_project_background,
+    load_project_background,
+    load_project_background_progress,
+)
+from risk_register import (
+    generate_risk_register,
+    load_risk_register,
+    load_risk_register_progress,
 )
 
 
@@ -379,8 +409,14 @@ REPORT_PROGRESS_FILES = {
     "legal_assessment_7_deadly_sins": "legal_assessment_7_deadly_sins.progress.json",
     "commercial_drivers_strategy_to_win": "commercial_strategy.progress.json",
     "financial_bonds": "financial_bonds.progress.json",
+    "financial_liabilities_penalties": "financial_liabilities_penalties.progress.json",
     "prebid_queries": "prebid_queries.progress.json",
     "prequalification_requirements": "prequalification_requirements.progress.json",
+    "project_background": "project_background.progress.json",
+    "key_information": "key_information.progress.json",
+    "bid_process_evaluation": "bid_process_evaluation.progress.json",
+    "risk_register": "risk_register.progress.json",
+    "discrepancy_report": "discrepancy_report.progress.json",
 }
 
 
@@ -752,6 +788,31 @@ def create_financial_bonds(project_id: str) -> dict[str, Any]:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
+@app.get("/api/projects/{project_id}/reports/financial-liabilities-penalties")
+def get_financial_liabilities_penalties(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    return load_financial_liabilities_penalties(root)
+
+
+@app.get("/api/projects/{project_id}/reports/financial-liabilities-penalties/progress")
+def get_financial_liabilities_penalties_progress(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    return load_financial_liabilities_penalties_progress(root)
+
+
+@app.post("/api/projects/{project_id}/reports/financial-liabilities-penalties")
+def create_financial_liabilities_penalties(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    try:
+        return generate_financial_liabilities_penalties(root)
+    except RuntimeError as exc:
+        mark_report_failed(root, "financial_liabilities_penalties", exc)
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        mark_report_failed(root, "financial_liabilities_penalties", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
 @app.get("/api/projects/{project_id}/reports/prebid-queries")
 def get_prebid_queries(project_id: str) -> dict[str, Any]:
     root = project_path(project_id)
@@ -799,6 +860,131 @@ def create_prequalification_requirements(project_id: str) -> dict[str, Any]:
         raise HTTPException(status_code=400, detail=str(exc))
     except Exception as exc:
         mark_report_failed(root, "prequalification_requirements", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/api/projects/{project_id}/reports/project-background")
+def get_project_background(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    return load_project_background(root)
+
+
+@app.get("/api/projects/{project_id}/reports/project-background/progress")
+def get_project_background_progress(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    return load_project_background_progress(root)
+
+
+@app.post("/api/projects/{project_id}/reports/project-background")
+def create_project_background(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    try:
+        return generate_project_background(root)
+    except RuntimeError as exc:
+        mark_report_failed(root, "project_background", exc)
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        mark_report_failed(root, "project_background", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/api/projects/{project_id}/reports/key-information")
+def get_key_information(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    return load_key_information(root)
+
+
+@app.get("/api/projects/{project_id}/reports/key-information/progress")
+def get_key_information_progress(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    return load_key_information_progress(root)
+
+
+@app.post("/api/projects/{project_id}/reports/key-information")
+def create_key_information(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    try:
+        return generate_key_information(root)
+    except RuntimeError as exc:
+        mark_report_failed(root, "key_information", exc)
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        mark_report_failed(root, "key_information", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/api/projects/{project_id}/reports/bid-process-evaluation")
+def get_bid_process_evaluation(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    return load_bid_process_evaluation(root)
+
+
+@app.get("/api/projects/{project_id}/reports/bid-process-evaluation/progress")
+def get_bid_process_evaluation_progress(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    return load_bid_process_evaluation_progress(root)
+
+
+@app.post("/api/projects/{project_id}/reports/bid-process-evaluation")
+def create_bid_process_evaluation(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    try:
+        return generate_bid_process_evaluation(root)
+    except RuntimeError as exc:
+        mark_report_failed(root, "bid_process_evaluation", exc)
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        mark_report_failed(root, "bid_process_evaluation", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/api/projects/{project_id}/reports/risk-register")
+def get_risk_register(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    return load_risk_register(root)
+
+
+@app.get("/api/projects/{project_id}/reports/risk-register/progress")
+def get_risk_register_progress(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    return load_risk_register_progress(root)
+
+
+@app.post("/api/projects/{project_id}/reports/risk-register")
+def create_risk_register(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    try:
+        return generate_risk_register(root)
+    except RuntimeError as exc:
+        mark_report_failed(root, "risk_register", exc)
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        mark_report_failed(root, "risk_register", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/api/projects/{project_id}/reports/discrepancy-report")
+def get_discrepancy_report(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    return load_discrepancy_report(root)
+
+
+@app.get("/api/projects/{project_id}/reports/discrepancy-report/progress")
+def get_discrepancy_report_progress(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    return load_discrepancy_report_progress(root)
+
+
+@app.post("/api/projects/{project_id}/reports/discrepancy-report")
+def create_discrepancy_report(project_id: str) -> dict[str, Any]:
+    root = project_path(project_id)
+    try:
+        return generate_discrepancy_report(root)
+    except RuntimeError as exc:
+        mark_report_failed(root, "discrepancy_report", exc)
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        mark_report_failed(root, "discrepancy_report", exc)
         raise HTTPException(status_code=500, detail=str(exc))
 
 

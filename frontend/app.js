@@ -4,8 +4,14 @@ let documents = [];
 let legalReport = {};
 let commercialReport = {};
 let financialReport = {};
+let financialLiabilitiesReport = {};
 let prebidReport = {};
 let prequalificationReport = {};
+let projectBackgroundReport = {};
+let keyInformationReport = {};
+let bidProcessReport = {};
+let riskReport = {};
+let discrepancyReport = {};
 let pipelineProgress = {};
 let stopPipelineSocket = null;
 let stopAgentProgressWatcher = null;
@@ -238,6 +244,111 @@ function downloadFinancialExcel() {
   downloadExcelWorkbook(`${projectFileStem()}_financial_bonds.xls`, columns, rows);
 }
 
+function downloadFinancialLiabilitiesExcel() {
+  const rows = financialLiabilityDisplayRows(financialLiabilitiesReport);
+  const columns = [
+    ["S. No.", (row) => row.display_s_no],
+    ["Liability Category", (row) => liabilityCategory(row)],
+    ["Topic", (row) => row.topic],
+    ["Comments", (row) => row.comments],
+    ["CAP", (row) => row.cap],
+    ["Period", (row) => row.period],
+    ["Liability Type", (row) => row.liability_type],
+    ["Amount / Rate", (row) => row.amount_or_rate],
+    ["Basis", (row) => row.basis],
+    ["Document Name", (row) => row.document_name],
+    ["Page No.", (row) => row.page_no],
+    ["Confidence", (row) => row.confidence],
+    ["Evidence", (row) => joinedCitations(row.evidence_citations || [])],
+  ].map(([label, value]) => ({ label, value }));
+  downloadExcelWorkbook(`${projectFileStem()}_financial_liabilities_penalties.xls`, columns, rows);
+}
+
+function downloadRiskExcel() {
+  const rows = riskReport?.rows || [];
+  const columns = [
+    ["S. No.", (row) => row.s_no],
+    ["Risk Category", (row) => row.risk_category],
+    ["Risks", (row) => row.risk_type],
+    ["Risk Title / sub-category", (row) => row.risk_title],
+    ["Risk Description", (row) => row.risk_description],
+    ["Occurrence", (row) => row.occurrence],
+    ["Impact", (row) => row.impact],
+    ["Achieved Actions", (row) => row.achieved_actions],
+    ["Actions plan (action + resp. + deadline)", (row) => row.action_plan],
+    ["Residual Occurrence", (row) => row.residual_occurrence],
+    ["Residual Impact", (row) => row.residual_impact],
+    ["Basis", (row) => row.basis],
+    ["Evidence", (row) => joinedCitations(row.evidence_citations || [])],
+  ].map(([label, value]) => ({ label, value }));
+  downloadExcelWorkbook(`${projectFileStem()}_risk_register.xls`, columns, rows);
+}
+
+function downloadDiscrepancyExcel() {
+  const rows = discrepancyReport?.rows || [];
+  const columns = [
+    ["S. No.", (row) => row.s_no],
+    ["Discrepancy Category", (row) => row.discrepancy_category],
+    ["Type", (row) => row.discrepancy_type],
+    ["Title", (row) => row.title],
+    ["Source A", (row) => row.source_a],
+    ["Source B", (row) => row.source_b],
+    ["Discrepancy / Contradiction Summary", (row) => row.contradiction_summary],
+    ["Impact", (row) => row.impact],
+    ["Severity", (row) => row.severity],
+    ["Recommended Resolution", (row) => row.recommended_resolution],
+    ["Status", (row) => row.status],
+    ["Evidence", (row) => joinedCitations(row.evidence_citations || [])],
+  ].map(([label, value]) => ({ label, value }));
+  downloadExcelWorkbook(`${projectFileStem()}_discrepancy_register.xls`, columns, rows);
+}
+
+function downloadProjectBackgroundExcel() {
+  const rows = projectBackgroundReport?.rows || [];
+  const columns = [
+    ["S. No.", (row) => row.s_no],
+    ["Section", (row) => row.section_title],
+    ["Bullet", (row) => row.bullet],
+    ["Sub Bullets", (row) => (row.sub_bullets || []).join("\n")],
+    ["Key Figures", (row) => (row.key_figures || []).join("; ")],
+    ["Document Name", (row) => row.document_name],
+    ["Page No.", (row) => row.page_no],
+    ["Confidence", (row) => row.confidence],
+    ["Evidence", (row) => joinedCitations(row.citations || [])],
+  ].map(([label, value]) => ({ label, value }));
+  downloadExcelWorkbook(`${projectFileStem()}_project_background.xls`, columns, rows);
+}
+
+function downloadKeyInformationExcel() {
+  const rows = keyInformationReport?.rows || [];
+  const columns = [
+    ["S. No.", (row) => row.s_no],
+    ["Group", (row) => row.group_title],
+    ["Label", (row) => row.label],
+    ["Values", (row) => (row.values || []).join("\n")],
+    ["Status", (row) => row.status],
+    ["Notes", (row) => row.notes],
+    ["Confidence", (row) => row.confidence],
+    ["Evidence", (row) => joinedCitations(row.citations || [])],
+  ].map(([label, value]) => ({ label, value }));
+  downloadExcelWorkbook(`${projectFileStem()}_key_information.xls`, columns, rows);
+}
+
+function downloadBidProcessExcel() {
+  const rows = bidProcessReport?.rows || [];
+  const columns = [
+    ["S. No.", (row) => row.s_no],
+    ["Group", (row) => row.group_title],
+    ["Label", (row) => row.label],
+    ["Value", (row) => row.value],
+    ["Status", (row) => row.status],
+    ["Notes", (row) => row.notes],
+    ["Confidence", (row) => row.confidence],
+    ["Evidence", (row) => joinedCitations(row.citations || [])],
+  ].map(([label, value]) => ({ label, value }));
+  downloadExcelWorkbook(`${projectFileStem()}_bid_process_evaluation.xls`, columns, rows);
+}
+
 function projectIdFromPath() {
   const parts = location.pathname.split("/").filter(Boolean);
   return parts[0] === "projects" && parts[1] ? decodeURIComponent(parts[1]) : null;
@@ -280,8 +391,14 @@ async function loadProject(projectId) {
   legalReport = await api(`/api/projects/${projectId}/reports/legal-assessment`).catch(() => ({}));
   commercialReport = await api(`/api/projects/${projectId}/reports/commercial-strategy`).catch(() => ({}));
   financialReport = await api(`/api/projects/${projectId}/reports/financial-bonds`).catch(() => ({}));
+  financialLiabilitiesReport = await api(`/api/projects/${projectId}/reports/financial-liabilities-penalties`).catch(() => ({}));
   prebidReport = await api(`/api/projects/${projectId}/reports/prebid-queries`).catch(() => ({}));
   prequalificationReport = await api(`/api/projects/${projectId}/reports/prequalification-requirements`).catch(() => ({}));
+  projectBackgroundReport = await api(`/api/projects/${projectId}/reports/project-background`).catch(() => ({}));
+  keyInformationReport = await api(`/api/projects/${projectId}/reports/key-information`).catch(() => ({}));
+  bidProcessReport = await api(`/api/projects/${projectId}/reports/bid-process-evaluation`).catch(() => ({}));
+  riskReport = await api(`/api/projects/${projectId}/reports/risk-register`).catch(() => ({}));
+  discrepancyReport = await api(`/api/projects/${projectId}/reports/discrepancy-report`).catch(() => ({}));
   pipelineProgress = await api(`/api/projects/${projectId}/pipeline-progress`).catch(() => ({}));
 }
 
@@ -371,9 +488,15 @@ function renderProjectDetail() {
             <button id="generate-all" type="button">Run All Agents</button>
             <button id="generate-prebid" type="button">Generate Pre-Bid Queries</button>
             <button id="generate-prequalification" type="button">Generate Pre-Qualification Requirements</button>
+            <button id="generate-project-background" type="button">Generate Project Background</button>
+            <button id="generate-key-information" type="button">Generate Key Information</button>
+            <button id="generate-bid-process" type="button">Generate Bid Process</button>
             <button id="generate-commercial" type="button">Generate Commercial Strategy</button>
             <button id="generate-financial" type="button">Generate Financial Bonds</button>
+            <button id="generate-financial-liabilities" type="button">Generate Liabilities & Penalties</button>
             <button id="generate-legal" type="button">Generate Legal Assessment</button>
+            <button id="generate-risk" type="button">Generate Risk Register</button>
+            <button id="generate-discrepancy" type="button">Generate Discrepancy Register</button>
           </div>
         </div>
         <div id="all-agents-status" class="status"></div>
@@ -381,10 +504,22 @@ function renderProjectDetail() {
         <div id="prebid-report">${prebidReportHtml(prebidReport)}</div>
         <div id="prequalification-status" class="status"></div>
         <div id="prequalification-report">${prequalificationReportHtml(prequalificationReport)}</div>
+        <div id="project-background-status" class="status"></div>
+        <div id="project-background-report">${projectBackgroundReportHtml(projectBackgroundReport)}</div>
+        <div id="key-information-status" class="status"></div>
+        <div id="key-information-report">${keyInformationReportHtml(keyInformationReport)}</div>
+        <div id="bid-process-status" class="status"></div>
+        <div id="bid-process-report">${bidProcessReportHtml(bidProcessReport)}</div>
         <div id="commercial-status" class="status"></div>
         <div id="commercial-report">${commercialReportHtml(commercialReport)}</div>
         <div id="financial-status" class="status"></div>
         <div id="financial-report">${financialReportHtml(financialReport)}</div>
+        <div id="financial-liabilities-status" class="status"></div>
+        <div id="financial-liabilities-report">${financialLiabilitiesReportHtml(financialLiabilitiesReport)}</div>
+        <div id="risk-status" class="status"></div>
+        <div id="risk-report">${riskReportHtml(riskReport)}</div>
+        <div id="discrepancy-status" class="status"></div>
+        <div id="discrepancy-report">${discrepancyReportHtml(discrepancyReport)}</div>
         <div id="legal-status" class="status"></div>
         <div id="legal-report">${legalReportHtml(legalReport)}</div>
       </section>
@@ -605,8 +740,14 @@ function bindProjectDetail() {
   const generateLegal = page.querySelector("#generate-legal");
   const generateCommercial = page.querySelector("#generate-commercial");
   const generateFinancial = page.querySelector("#generate-financial");
+  const generateFinancialLiabilities = page.querySelector("#generate-financial-liabilities");
   const generatePrebid = page.querySelector("#generate-prebid");
   const generatePrequalification = page.querySelector("#generate-prequalification");
+  const generateProjectBackgroundButton = page.querySelector("#generate-project-background");
+  const generateKeyInformationButton = page.querySelector("#generate-key-information");
+  const generateBidProcessButton = page.querySelector("#generate-bid-process");
+  const generateRisk = page.querySelector("#generate-risk");
+  const generateDiscrepancy = page.querySelector("#generate-discrepancy");
   const generateAll = page.querySelector("#generate-all");
   const startIndex = page.querySelector("#start-index");
 
@@ -666,8 +807,14 @@ function bindProjectDetail() {
   generateLegal.addEventListener("click", generateLegalAssessment);
   generateCommercial.addEventListener("click", generateCommercialStrategy);
   generateFinancial.addEventListener("click", generateFinancialBonds);
+  generateFinancialLiabilities.addEventListener("click", generateFinancialLiabilitiesPenalties);
   generatePrebid.addEventListener("click", generatePrebidQueries);
   generatePrequalification.addEventListener("click", generatePrequalificationRequirements);
+  generateProjectBackgroundButton.addEventListener("click", generateProjectBackground);
+  generateKeyInformationButton.addEventListener("click", generateKeyInformation);
+  generateBidProcessButton.addEventListener("click", generateBidProcess);
+  generateRisk.addEventListener("click", generateRiskRegister);
+  generateDiscrepancy.addEventListener("click", generateDiscrepancyReport);
   generateAll.addEventListener("click", generateAllAgents);
   startIndex.addEventListener("click", buildIndexAndRelations);
   bindPbqModal(page);
@@ -728,8 +875,14 @@ function setReportForKey(key, report) {
   if (key === "prebid") prebidReport = report;
   if (key === "commercial") commercialReport = report;
   if (key === "financial") financialReport = report;
+  if (key === "financialLiabilities") financialLiabilitiesReport = report;
   if (key === "legal") legalReport = report;
   if (key === "prequalification") prequalificationReport = report;
+  if (key === "projectBackground") projectBackgroundReport = report;
+  if (key === "keyInformation") keyInformationReport = report;
+  if (key === "bidProcess") bidProcessReport = report;
+  if (key === "risk") riskReport = report;
+  if (key === "discrepancy") discrepancyReport = report;
 }
 
 function hasGeneratedReport(report = {}) {
@@ -778,6 +931,30 @@ function agentSpecs() {
       render: prequalificationReportHtml,
     },
     {
+      key: "projectBackground",
+      label: "Project Background",
+      endpoint: "/reports/project-background",
+      statusId: "#project-background-status",
+      outputId: "#project-background-report",
+      render: projectBackgroundReportHtml,
+    },
+    {
+      key: "keyInformation",
+      label: "Key Information",
+      endpoint: "/reports/key-information",
+      statusId: "#key-information-status",
+      outputId: "#key-information-report",
+      render: keyInformationReportHtml,
+    },
+    {
+      key: "bidProcess",
+      label: "Bid Process and Evaluation",
+      endpoint: "/reports/bid-process-evaluation",
+      statusId: "#bid-process-status",
+      outputId: "#bid-process-report",
+      render: bidProcessReportHtml,
+    },
+    {
       key: "commercial",
       label: "Commercial Strategy",
       endpoint: "/reports/commercial-strategy",
@@ -792,6 +969,30 @@ function agentSpecs() {
       statusId: "#financial-status",
       outputId: "#financial-report",
       render: financialReportHtml,
+    },
+    {
+      key: "financialLiabilities",
+      label: "Financial Liabilities & Penalties",
+      endpoint: "/reports/financial-liabilities-penalties",
+      statusId: "#financial-liabilities-status",
+      outputId: "#financial-liabilities-report",
+      render: financialLiabilitiesReportHtml,
+    },
+    {
+      key: "risk",
+      label: "Risk Register",
+      endpoint: "/reports/risk-register",
+      statusId: "#risk-status",
+      outputId: "#risk-report",
+      render: riskReportHtml,
+    },
+    {
+      key: "discrepancy",
+      label: "Discrepancy Register",
+      endpoint: "/reports/discrepancy-report",
+      statusId: "#discrepancy-status",
+      outputId: "#discrepancy-report",
+      render: discrepancyReportHtml,
     },
     {
       key: "legal",
@@ -1206,6 +1407,269 @@ async function generatePrequalificationRequirements() {
   });
 }
 
+function projectBackgroundReportHtml(report) {
+  if (!report || !report.rows) {
+    return `<div class="empty-row">No Project Background document has been generated yet.</div>`;
+  }
+  const sectionBlocks = (report.sections || [])
+    .map((section) => {
+      const bullets = (section.bullets || [])
+        .map(
+          (item) => `
+            <li>
+              <p>${escapeHtml(item.bullet || "")}</p>
+              ${
+                (item.sub_bullets || []).length
+                  ? `<ul>${item.sub_bullets.map((sub) => `<li>${escapeHtml(sub)}</li>`).join("")}</ul>`
+                  : ""
+              }
+              ${
+                (item.key_figures || []).length
+                  ? `<div class="figure-chip-row">${item.key_figures.map((figure) => `<span>${escapeHtml(figure)}</span>`).join("")}</div>`
+                  : ""
+              }
+              <details class="background-evidence">
+                <summary>Evidence</summary>
+                <div class="evidence-list">
+                  ${(item.citations || [])
+                    .map(
+                      (cite) => `
+                        <div class="evidence-item">
+                          <strong>${escapeHtml(cite.document_name)} / page ${escapeHtml(cite.page_no)}</strong>
+                          <span>${escapeHtml(cite.topic_name || "")}</span>
+                          <p>${escapeHtml(cite.excerpt || "")}</p>
+                        </div>
+                      `,
+                    )
+                    .join("")}
+                </div>
+              </details>
+            </li>
+          `,
+        )
+        .join("");
+      return `
+        <section class="background-section">
+          <h3>${escapeHtml(section.title || "Project Background")}</h3>
+          <ul class="background-bullets">${bullets || `<li><p>No supported bullets found for this section.</p></li>`}</ul>
+          ${section.coverage_note ? `<p class="basis-text">${escapeHtml(section.coverage_note)}</p>` : ""}
+        </section>
+      `;
+    })
+    .join("");
+  const logs = (report.logs || [])
+    .map((log) => `<div class="log-line">${escapeHtml(log.message)}</div>`)
+    .join("");
+  return `
+    <div class="project-background-report">
+      <div class="prebid-head">
+        <span>Project Background</span>
+        <div class="prebid-head-actions">
+          <strong>${report.rows.length} bullets</strong>
+          <button type="button" class="table-expand-button" onclick="downloadProjectBackgroundExcel()">Download Excel</button>
+        </div>
+      </div>
+      <div class="background-slide-preview">
+        <div class="background-slide-title">
+          <span></span>
+          <h2>Project Background</h2>
+        </div>
+        ${sectionBlocks}
+      </div>
+    </div>
+    <details class="agent-logs">
+      <summary>Project Background specialist activity log</summary>
+      <div>${logs || `<div class="log-line">No logs recorded.</div>`}</div>
+    </details>
+  `;
+}
+
+async function generateProjectBackground() {
+  await runAgent({
+    key: "projectBackground",
+    label: "Project Background",
+    endpoint: "/reports/project-background",
+    statusId: "#project-background-status",
+    outputId: "#project-background-report",
+    render: projectBackgroundReportHtml,
+  });
+}
+
+function keyInformationReportHtml(report) {
+  if (!report || !report.rows) {
+    return `<div class="empty-row">No Key Information document has been generated yet.</div>`;
+  }
+  const groups = report.groups || [];
+  const groupBlocks = groups
+    .map((group) => {
+      const items = (group.items || [])
+        .map((item) => {
+          const values = (item.values || []).length ? item.values : [item.status === "not_found" ? "Not found in indexed evidence" : "-"];
+          return `
+            <li>
+              <div class="key-info-label">
+                <span>${escapeHtml(item.label || "")}</span>
+                <small>${escapeHtml(item.confidence || "medium")}</small>
+              </div>
+              <ul>
+                ${values.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}
+              </ul>
+              ${item.notes ? `<p class="basis-text">${escapeHtml(item.notes)}</p>` : ""}
+              ${
+                (item.citations || []).length
+                  ? `<details class="background-evidence">
+                      <summary>Evidence</summary>
+                      <div class="evidence-list">
+                        ${(item.citations || [])
+                          .map(
+                            (cite) => `
+                              <div class="evidence-item">
+                                <strong>${escapeHtml(cite.document_name)} / page ${escapeHtml(cite.page_no)}</strong>
+                                <span>${escapeHtml(cite.topic_name || "")}</span>
+                                <p>${escapeHtml(cite.excerpt || "")}</p>
+                              </div>
+                            `,
+                          )
+                          .join("")}
+                      </div>
+                    </details>`
+                  : ""
+              }
+            </li>
+          `;
+        })
+        .join("");
+      return `
+        <section class="key-info-group">
+          <h3>${escapeHtml(group.title || "Key Information")}</h3>
+          <ul>${items || `<li><div class="key-info-label"><span>No facts found</span></div></li>`}</ul>
+        </section>
+      `;
+    })
+    .join("");
+  const logs = (report.logs || [])
+    .map((log) => `<div class="log-line">${escapeHtml(log.message)}</div>`)
+    .join("");
+  return `
+    <div class="project-background-report key-info-report">
+      <div class="prebid-head">
+        <span>Key Information</span>
+        <div class="prebid-head-actions">
+          <strong>${report.rows.length} items</strong>
+          <button type="button" class="table-expand-button" onclick="downloadKeyInformationExcel()">Download Excel</button>
+        </div>
+      </div>
+      <div class="background-slide-preview">
+        <div class="background-slide-title">
+          <span></span>
+          <h2>Key Information</h2>
+        </div>
+        <div class="key-info-grid">${groupBlocks}</div>
+      </div>
+    </div>
+    <details class="agent-logs">
+      <summary>Key Information specialist activity log</summary>
+      <div>${logs || `<div class="log-line">No logs recorded.</div>`}</div>
+    </details>
+  `;
+}
+
+async function generateKeyInformation() {
+  await runAgent({
+    key: "keyInformation",
+    label: "Key Information",
+    endpoint: "/reports/key-information",
+    statusId: "#key-information-status",
+    outputId: "#key-information-report",
+    render: keyInformationReportHtml,
+  });
+}
+
+function bidProcessReportHtml(report) {
+  if (!report || !report.rows) {
+    return `<div class="empty-row">No Bid Process and Evaluation document has been generated yet.</div>`;
+  }
+  const groupBlocks = (report.groups || [])
+    .map((group) => {
+      const items = (group.items || [])
+        .map(
+          (item) => `
+            <li>
+              <div class="bid-process-line">
+                <span>${escapeHtml(item.label || "")}</span>
+                <b>${escapeHtml(item.value || "-")}</b>
+              </div>
+              ${item.notes ? `<p class="basis-text">${escapeHtml(item.notes)}</p>` : ""}
+              ${
+                (item.citations || []).length
+                  ? `<details class="background-evidence">
+                      <summary>Evidence</summary>
+                      <div class="evidence-list">
+                        ${(item.citations || [])
+                          .map(
+                            (cite) => `
+                              <div class="evidence-item">
+                                <strong>${escapeHtml(cite.document_name)} / page ${escapeHtml(cite.page_no)}</strong>
+                                <span>${escapeHtml(cite.topic_name || "")}</span>
+                                <p>${escapeHtml(cite.excerpt || "")}</p>
+                              </div>
+                            `,
+                          )
+                          .join("")}
+                      </div>
+                    </details>`
+                  : ""
+              }
+            </li>
+          `,
+        )
+        .join("");
+      return `
+        <section class="bid-process-group">
+          <h3>${escapeHtml(group.title || "Bid Process")}</h3>
+          <ul>${items || `<li><div class="bid-process-line"><span>No facts found</span><b>-</b></div></li>`}</ul>
+        </section>
+      `;
+    })
+    .join("");
+  const logs = (report.logs || [])
+    .map((log) => `<div class="log-line">${escapeHtml(log.message)}</div>`)
+    .join("");
+  return `
+    <div class="project-background-report bid-process-report">
+      <div class="prebid-head">
+        <span>Bid Process and Evaluation</span>
+        <div class="prebid-head-actions">
+          <strong>${report.rows.length} items</strong>
+          <button type="button" class="table-expand-button" onclick="downloadBidProcessExcel()">Download Excel</button>
+        </div>
+      </div>
+      <div class="background-slide-preview">
+        <div class="background-slide-title">
+          <span></span>
+          <h2>Bid Process and Evaluation</h2>
+        </div>
+        <div class="bid-process-grid">${groupBlocks}</div>
+      </div>
+    </div>
+    <details class="agent-logs">
+      <summary>Bid Process specialist activity log</summary>
+      <div>${logs || `<div class="log-line">No logs recorded.</div>`}</div>
+    </details>
+  `;
+}
+
+async function generateBidProcess() {
+  await runAgent({
+    key: "bidProcess",
+    label: "Bid Process and Evaluation",
+    endpoint: "/reports/bid-process-evaluation",
+    statusId: "#bid-process-status",
+    outputId: "#bid-process-report",
+    render: bidProcessReportHtml,
+  });
+}
+
 function legalReportHtml(report) {
   if (!report || !report.rows) {
     return `<div class="empty-row">No Legal Assessment has been generated yet.</div>`;
@@ -1434,6 +1898,280 @@ async function generateFinancialBonds() {
     statusId: "#financial-status",
     outputId: "#financial-report",
     render: financialReportHtml,
+  });
+}
+
+function financialLiabilitiesReportHtml(report) {
+  if (!report || !report.rows) {
+    return `<div class="empty-row">No Financial Liabilities & Penalties document has been generated yet.</div>`;
+  }
+  const displayRows = financialLiabilityDisplayRows(report);
+  const rowsByCategory = displayRows.reduce((groups, row) => {
+    const category = liabilityCategory(row);
+    groups[category] = groups[category] || [];
+    groups[category].push(row);
+    return groups;
+  }, {});
+  const categoryOrder = ["Financial Liabilities & Penalties", "Other Liabilities & Penalties"];
+  const rows = categoryOrder
+    .filter((category) => (rowsByCategory[category] || []).length)
+    .map((category) => `
+      <tr class="liability-category-row">
+        <td colspan="4">${escapeHtml(category)}</td>
+      </tr>
+      ${(rowsByCategory[category] || [])
+        .map(
+          (row) => `
+        <tr>
+          <td>${escapeHtml(row.display_s_no)}</td>
+          <td>
+            <strong>${escapeHtml(row.topic)}</strong>
+            <small>${escapeHtml(row.period || "-")} / ${escapeHtml(row.liability_type || "-")}</small>
+          </td>
+          <td>
+            ${escapeHtml(row.comments)}
+            <details class="inline-evidence">
+              <summary>Evidence and extraction</summary>
+              <div class="extraction-grid">
+                <span><b>Amount / Rate</b>${escapeHtml(row.amount_or_rate || "-")}</span>
+                <span><b>Basis</b>${escapeHtml(row.basis || "-")}</span>
+                <span><b>Document</b>${escapeHtml(row.document_name || "-")}</span>
+                <span><b>Page</b>${escapeHtml(row.page_no || "-")}</span>
+                <span><b>Confidence</b>${escapeHtml(row.confidence || "-")}</span>
+              </div>
+              <div class="evidence-list">
+                ${(row.evidence_citations || [])
+                  .map(
+                    (item) => `
+                      <div class="evidence-item">
+                        <strong>${escapeHtml(item.document_name)} / page ${escapeHtml(item.page_no)}</strong>
+                        <span>${escapeHtml(item.topic_name || "")}</span>
+                        <p>${escapeHtml(item.excerpt || "")}</p>
+                      </div>
+                    `,
+                  )
+                  .join("") || `<div class="log-line">No citation returned.</div>`}
+              </div>
+            </details>
+          </td>
+          <td>${escapeHtml(row.cap || "-")}</td>
+        </tr>
+      `,
+        )
+        .join("")}
+    `)
+    .join("");
+  const logs = (report.logs || [])
+    .map((log) => `<div class="log-line">${escapeHtml(log.message)}</div>`)
+    .join("");
+  return `
+    <div class="risk-table-wrap liability-report">
+      <div class="financial-head">
+        <span>Financial Liabilities & Penalties</span>
+        <button type="button" class="table-expand-button" onclick="downloadFinancialLiabilitiesExcel()">Download Excel</button>
+      </div>
+      <table class="risk-table liability-table">
+        <thead>
+          <tr>
+            <th>S. No.</th>
+            <th>Topic</th>
+            <th>Comments</th>
+            <th>CAP</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <details class="agent-logs">
+      <summary>Liabilities specialist activity log</summary>
+      <div>${logs || `<div class="log-line">No logs recorded.</div>`}</div>
+    </details>
+  `;
+}
+
+function financialLiabilityDisplayRows(report = {}) {
+  const categoryOrder = ["Financial Liabilities & Penalties", "Other Liabilities & Penalties"];
+  let serial = 1;
+  return categoryOrder.flatMap((category) =>
+    (report.rows || [])
+      .filter((row) => liabilityCategory(row) === category)
+      .map((row) => ({ ...row, display_s_no: serial++ })),
+  );
+}
+
+function liabilityCategory(row = {}) {
+  if (row.liability_category) return row.liability_category;
+  const text = `${row.topic || ""} ${row.liability_type || ""} ${row.period || ""}`.toLowerCase();
+  if (text.includes("service level") || text.includes("old structure") || text.includes("existing asset") || text.includes("maintenance")) {
+    return "Other Liabilities & Penalties";
+  }
+  return "Financial Liabilities & Penalties";
+}
+
+async function generateFinancialLiabilitiesPenalties() {
+  await runAgent({
+    key: "financialLiabilities",
+    label: "Financial Liabilities & Penalties",
+    endpoint: "/reports/financial-liabilities-penalties",
+    statusId: "#financial-liabilities-status",
+    outputId: "#financial-liabilities-report",
+    render: financialLiabilitiesReportHtml,
+  });
+}
+
+function riskColorClass(value) {
+  const score = Number(value || 0);
+  if (score >= 3) return "risk-score-high";
+  if (score >= 2) return "risk-score-medium";
+  return "risk-score-low";
+}
+
+function riskReportHtml(report) {
+  if (!report || !report.rows) {
+    return `<div class="empty-row">No Risk Register has been generated yet.</div>`;
+  }
+  const rows = report.rows
+    .map(
+      (row) => `
+        <tr>
+          <td>${escapeHtml(row.s_no)}</td>
+          <td>${escapeHtml(row.risk_category)}</td>
+          <td>${escapeHtml(row.risk_type)}</td>
+          <td><strong>${escapeHtml(row.risk_title)}</strong></td>
+          <td>${escapeHtml(row.risk_description)}</td>
+          <td class="${riskColorClass(row.occurrence)}">${escapeHtml(row.occurrence)}</td>
+          <td class="${riskColorClass(row.impact)}">${escapeHtml(row.impact)}</td>
+          <td>${escapeHtml(row.achieved_actions)}</td>
+          <td>${escapeHtml(row.action_plan)}</td>
+          <td class="${riskColorClass(row.residual_occurrence)}">${escapeHtml(row.residual_occurrence)}</td>
+          <td class="${riskColorClass(row.residual_impact)}">${escapeHtml(row.residual_impact)}</td>
+        </tr>
+      `,
+    )
+    .join("");
+  const logs = (report.logs || [])
+    .map((log) => `<div class="log-line">${escapeHtml(log.message)}</div>`)
+    .join("");
+  return `
+    <div class="risk-report">
+      <div class="financial-head">
+        <span>Risk Register / ${escapeHtml((report.rows || []).length)} rows</span>
+        <button type="button" class="table-expand-button" onclick="downloadRiskExcel()">Download Excel</button>
+      </div>
+      <div class="table-scroll">
+        <table class="risk-table">
+          <thead>
+            <tr>
+              <th>S. No.</th>
+              <th>Risk Category</th>
+              <th>Risks</th>
+              <th>Risk Title / sub-category</th>
+              <th>Risk Description</th>
+              <th>Occurrence</th>
+              <th>Impact</th>
+              <th>Achieved Actions</th>
+              <th>Actions plan</th>
+              <th>Residual Occ.</th>
+              <th>Residual Impact</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+    <details class="agent-logs">
+      <summary>Risk specialist activity log</summary>
+      <div>${logs || `<div class="log-line">No logs recorded.</div>`}</div>
+    </details>
+  `;
+}
+
+async function generateRiskRegister() {
+  await runAgent({
+    key: "risk",
+    label: "Risk Register",
+    endpoint: "/reports/risk-register",
+    statusId: "#risk-status",
+    outputId: "#risk-report",
+    render: riskReportHtml,
+  });
+}
+
+function discrepancySeverityClass(value) {
+  const severity = String(value || "").toLowerCase();
+  if (severity === "high") return "risk-score-high";
+  if (severity === "medium") return "risk-score-medium";
+  return "risk-score-low";
+}
+
+function discrepancyReportHtml(report) {
+  if (!report || !report.rows) {
+    return `<div class="empty-row">No Discrepancy Register has been generated yet.</div>`;
+  }
+  const rows = report.rows
+    .map(
+      (row) => `
+        <tr>
+          <td>${escapeHtml(row.s_no)}</td>
+          <td>${escapeHtml(row.discrepancy_category)}</td>
+          <td>${escapeHtml(row.discrepancy_type)}</td>
+          <td><strong>${escapeHtml(row.title)}</strong></td>
+          <td>${escapeHtml(row.source_a)}</td>
+          <td>${escapeHtml(row.source_b)}</td>
+          <td>${escapeHtml(row.contradiction_summary)}</td>
+          <td>${escapeHtml(row.impact)}</td>
+          <td class="${discrepancySeverityClass(row.severity)}">${escapeHtml(row.severity)}</td>
+          <td>${escapeHtml(row.recommended_resolution)}</td>
+          <td>${escapeHtml(row.status)}</td>
+        </tr>
+      `,
+    )
+    .join("");
+  const logs = (report.logs || [])
+    .map((log) => `<div class="log-line">${escapeHtml(log.message)}</div>`)
+    .join("");
+  return `
+    <div class="risk-report discrepancy-report">
+      <div class="financial-head">
+        <span>Discrepancy Register / ${escapeHtml((report.rows || []).length)} rows</span>
+        <button type="button" class="table-expand-button" onclick="downloadDiscrepancyExcel()">Download Excel</button>
+      </div>
+      <div class="table-scroll">
+        <table class="risk-table discrepancy-table">
+          <thead>
+            <tr>
+              <th>S. No.</th>
+              <th>Category</th>
+              <th>Type</th>
+              <th>Title</th>
+              <th>Source A</th>
+              <th>Source B</th>
+              <th>Discrepancy / Contradiction</th>
+              <th>Impact</th>
+              <th>Severity</th>
+              <th>Recommended Resolution</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+    <details class="agent-logs">
+      <summary>Discrepancy specialist activity log</summary>
+      <div>${logs || `<div class="log-line">No logs recorded.</div>`}</div>
+    </details>
+  `;
+}
+
+async function generateDiscrepancyReport() {
+  await runAgent({
+    key: "discrepancy",
+    label: "Discrepancy Register",
+    endpoint: "/reports/discrepancy-report",
+    statusId: "#discrepancy-status",
+    outputId: "#discrepancy-report",
+    render: discrepancyReportHtml,
   });
 }
 

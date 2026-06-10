@@ -86,7 +86,7 @@ def create_client() -> tuple[OpenAI, str]:
         base_url=os.getenv("OPENROUTER_BASE_URL", OPENROUTER_BASE_URL),
         api_key=api_key,
         timeout=float(os.getenv("OPENROUTER_SEARCH_TIMEOUT_SECONDS", os.getenv("OPENROUTER_TIMEOUT_SECONDS", "120"))),
-        max_retries=int(os.getenv("OPENROUTER_MAX_RETRIES", "1")),
+        max_retries=int(os.getenv("OPENROUTER_SEARCH_MAX_RETRIES", os.getenv("OPENROUTER_MAX_RETRIES", "1"))),
         default_headers={
             "HTTP-Referer": os.getenv("OPENROUTER_SITE_URL", "http://localhost"),
             "X-Title": os.getenv("OPENROUTER_APP_NAME", "PDF Vision RAG"),

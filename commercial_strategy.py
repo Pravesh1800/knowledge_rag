@@ -121,7 +121,9 @@ class CommercialStrategyAgent:
         self.client, self.model, self.web_research_model = create_client()
         self.logs: list[dict[str, Any]] = []
         self.log_lock = threading.Lock()
+        self.partial_lock = threading.Lock()
         self.progress_path = self.reports_dir / "commercial_strategy.progress.json"
+        self.partial_path = self.reports_dir / "commercial_strategy.partial.json"
 
     def ensure_commercial_flags(self) -> None:
         changed = False
@@ -157,6 +159,46 @@ class CommercialStrategyAgent:
                 },
             )
 
+    def save_partial_section(
+        self,
+        section: dict[str, Any],
+        payload: dict[str, Any],
+        status: str,
+        evidence: list[dict[str, Any]] | None = None,
+        step_results: list[dict[str, Any]] | None = None,
+    ) -> None:
+        entry = {
+            "section_id": section["id"],
+            "title": section["title"],
+            "status": status,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "payload": payload,
+            "bullet_count": len(payload.get("bullets", []) if isinstance(payload, dict) else []),
+            "evidence": compact_evidence(evidence or [], limit=MAX_EVIDENCE),
+            "agent_steps": step_results or [],
+        }
+        with self.partial_lock:
+            partial = read_json(
+                self.partial_path,
+                {
+                    "report_type": "commercial_drivers_strategy_to_win",
+                    "status": "partial",
+                    "project_id": self.project_root.name,
+                    "sections": {},
+                },
+            )
+            if not isinstance(partial, dict):
+                partial = {
+                    "report_type": "commercial_drivers_strategy_to_win",
+                    "status": "partial",
+                    "project_id": self.project_root.name,
+                    "sections": {},
+                }
+            partial.setdefault("sections", {})
+            partial["sections"][section["id"]] = entry
+            partial["updated_at"] = entry["updated_at"]
+            write_json(self.partial_path, partial)
+
     def flagged_evidence(self, flag_ids: list[str]) -> list[dict[str, Any]]:
         evidence = []
         wanted = set(flag_ids)
@@ -172,9 +214,10 @@ class CommercialStrategyAgent:
     def searched_evidence(self, query: str, max_hits: int = 14) -> list[dict[str, Any]]:
         os.environ["PDF_VISION_RAG_ROOT"] = str(self.project_root)
         os.environ.setdefault("OPENROUTER_SEARCH_MODEL", os.getenv("OPENROUTER_SEARCH_MODEL", DEFAULT_SEARCH_MODEL))
+        use_dry_search = os.getenv("OPENROUTER_COMMERCIAL_SEARCH_DRY_RUN", "0").strip().lower() in {"1", "true", "yes", "on"}
         tree_searcher = searcher_module.TreeSearcher(
             query=query,
-            dry_run=False,
+            dry_run=use_dry_search,
             max_hits=max_hits,
             project_root=self.project_root,
             indexes_dir=self.indexes_dir,
@@ -545,7 +588,7 @@ Rules:
             self.model,
             prompt,
             system,
-            int(os.getenv("OPENROUTER_AGENT_MAX_TOKENS", str(DEFAULT_AGENT_MAX_TOKENS))),
+            int(os.getenv("OPENROUTER_COMMERCIAL_AGENT_MAX_TOKENS", os.getenv("OPENROUTER_AGENT_MAX_TOKENS", str(DEFAULT_AGENT_MAX_TOKENS)))),
         )
 
     def section_requirements(self, section: dict[str, Any]) -> dict[str, Any]:
@@ -587,14 +630,76 @@ Hard requirements:
             section["id"],
             {"reason": reason, "target_bullets": requirements["target_bullets"]},
         )
-        expanded = self.call_json(
-            self.specialist_prompt(section, evidence, step_results)
-            + "\n\nExisting under-filled draft:\n"
-            + json.dumps(draft, ensure_ascii=False)
-            + "\n\n"
-            + self.full_answer_instruction(section, reason),
-            "Return only valid JSON with action=answer and a full bullets array. Do not request tools.",
-        )
+        try:
+            expanded = self.call_json(
+                self.specialist_prompt(section, evidence, step_results)
+                + "\n\nExisting under-filled draft:\n"
+                + json.dumps(draft, ensure_ascii=False)
+                + "\n\n"
+                + self.full_answer_instruction(section, reason),
+                "Return only valid JSON with action=answer and a full bullets array. Do not request tools.",
+            )
+        except Exception as exc:
+            self.log(
+                "Commercial expansion returned malformed JSON after repair; keeping the best valid draft instead of failing.",
+                section["id"],
+                {"error_type": type(exc).__name__, "error": str(exc), "current_bullets": bullet_count},
+            )
+            try:
+                compact_prompt = f"""
+The current commercial draft is valid but under-filled.
+
+Section:
+{section["title"]}
+
+Minimum required bullets: {requirements["minimum_bullets"]}
+Target bullets: {requirements["target_bullets"]}
+Coverage lanes:
+{json.dumps(requirements["coverage_lanes"], ensure_ascii=False)}
+
+Existing valid draft:
+{json.dumps(draft, ensure_ascii=False)}
+
+Available evidence excerpts:
+{json.dumps(compact_evidence(evidence, limit=16), ensure_ascii=False)}
+
+Return valid JSON only:
+{{
+  "action": "answer",
+  "bullets": [
+    {{
+      "text": "commercial point",
+      "why_it_matters": "why it matters",
+      "score": 0,
+      "evidence_citations": ["document/page/topic citation"],
+      "web_citations": [],
+      "basis": "documented | inferred_from_evidence | web_supported",
+      "caveat": "short caveat if any"
+    }}
+  ],
+  "confidence": "low | medium | high"
+}}
+
+Rules:
+- Preserve the existing valid bullets.
+- Add only evidence-backed missing bullets until the minimum is met.
+- Do not return a shorter answer than the existing draft.
+- Return JSON only.
+""".strip()
+                compact_expanded = self.call_json(
+                    compact_prompt,
+                    "Return only valid JSON with action=answer and a complete bullets array.",
+                )
+                compact_expanded = self.normalize_action(compact_expanded)
+                if compact_expanded.get("action") == "answer" and len(compact_expanded.get("bullets", [])) >= bullet_count:
+                    return compact_expanded
+            except Exception as compact_exc:
+                self.log(
+                    "Compact commercial expansion also failed; retaining the best valid draft.",
+                    section["id"],
+                    {"error_type": type(compact_exc).__name__, "error": str(compact_exc), "current_bullets": bullet_count},
+                )
+            return draft
         expanded = self.normalize_action(expanded)
         if expanded.get("action") == "answer":
             return expanded
@@ -684,6 +789,7 @@ Hard requirements:
             if "answer" in result:
                 draft = result["answer"]
                 self.log(f"Commercial specialist drafted {len(draft.get('bullets', []))} bullet(s) for {section['title']}.", section["id"])
+                self.save_partial_section(section, draft, "draft", evidence, step_results)
                 break
 
         if draft is None:
@@ -695,6 +801,8 @@ Hard requirements:
                 "Return only valid JSON with action=answer and a complete bullets array.",
             )
             draft = self.normalize_action(draft)
+            if draft.get("action") == "answer":
+                self.save_partial_section(section, draft, "draft", evidence, step_results)
 
         draft = self.expand_underfilled_draft(
             section,
@@ -703,11 +811,20 @@ Hard requirements:
             step_results,
             "Draft was below the required minimum before verification.",
         )
+        self.save_partial_section(section, draft, "expanded_draft", evidence, step_results)
 
-        verifier = self.call_json(
-            self.verifier_prompt(section, draft, evidence, step_results),
-            "Return only valid JSON. You are a strict verifier of commercial bid-strategy bullets.",
-        )
+        try:
+            verifier = self.call_json(
+                self.verifier_prompt(section, draft, evidence, step_results),
+                "Return only valid JSON. You are a strict verifier of commercial bid-strategy bullets.",
+            )
+        except Exception as exc:
+            self.log(
+                "Commercial verifier returned malformed JSON after repair; using the best valid specialist draft.",
+                section["id"],
+                {"error_type": type(exc).__name__, "error": str(exc)},
+            )
+            verifier = {"bullets": draft.get("bullets", []), "warnings": ["Verifier JSON repair failed; retained specialist draft."], "verification_note": "Verifier failed non-fatally."}
         verifier_bullet_count = len(verifier.get("bullets", []) if isinstance(verifier, dict) else [])
         requirements = self.section_requirements(section)
         if verifier_bullet_count < requirements["minimum_bullets"]:
@@ -729,7 +846,7 @@ Hard requirements:
             section["id"],
             {"warnings": verifier.get("warnings", [])},
         )
-        return {
+        section_result = {
             "section_id": section["id"],
             "title": section["title"],
             "bullets": verifier.get("bullets") or draft.get("bullets", []),
@@ -738,6 +855,8 @@ Hard requirements:
             "verifier": verifier,
             "confidence": draft.get("confidence", "medium"),
         }
+        self.save_partial_section(section, section_result, "finalized", evidence, step_results)
+        return section_result
 
     def generate(self) -> dict[str, Any]:
         self.log("Starting Commercial Drivers and Strategy to WIN generation.")

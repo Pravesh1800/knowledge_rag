@@ -13,3 +13,8 @@ projects/
 *.xlsx
 *.xls
 *.csv
+core_rag_app/
+generation_exports/
+index_exports/
+index_exports.zip
+prequalification_rerun_result.json

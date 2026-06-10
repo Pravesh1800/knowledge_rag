@@ -43,12 +43,24 @@ def load_dotenv(project_root: Path) -> None:
 def read_json(path: Path, default: Any) -> Any:
     if not path.exists():
         return default
-    return json.loads(path.read_text(encoding="utf-8-sig"))
+    for _ in range(10):
+        try:
+            raw = path.read_text(encoding="utf-8-sig")
+            if raw.strip():
+                return json.loads(raw)
+        except json.JSONDecodeError:
+            pass
+        # Progress files are updated by worker threads while the UI polls them.
+        # Give an in-flight write a brief chance to complete instead of crashing the API.
+        threading.Event().wait(0.05)
+    return default
 
 
 def write_json(path: Path, data: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    temp_path = path.with_name(f"{path.name}.{os.getpid()}.{threading.get_ident()}.tmp")
+    temp_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    temp_path.replace(path)
 
 
 def parse_json_response(text: str) -> dict[str, Any]:

@@ -165,7 +165,9 @@ class PreBidQueryAgent:
         self.client, self.model, self.web_research_model = create_client()
         self.logs: list[dict[str, Any]] = []
         self.log_lock = threading.Lock()
+        self.partial_lock = threading.Lock()
         self.progress_path = self.reports_dir / "prebid_queries.progress.json"
+        self.partial_path = self.reports_dir / "prebid_queries.partial.json"
 
     def ensure_prebid_flags(self) -> None:
         changed = False
@@ -200,6 +202,55 @@ class PreBidQueryAgent:
                     "logs": logs,
                 },
             )
+
+    def save_partial_category(
+        self,
+        category: dict[str, Any],
+        payload: dict[str, Any],
+        status: str,
+        evidence: list[dict[str, Any]] | None = None,
+        step_results: list[dict[str, Any]] | None = None,
+        verifier: dict[str, Any] | None = None,
+        coverage_review: dict[str, Any] | None = None,
+    ) -> None:
+        queries = payload.get("queries", []) if isinstance(payload, dict) else []
+        if not isinstance(queries, list):
+            queries = []
+        entry = normalize_payload(
+            {
+                "category_id": category["id"],
+                "title": category["title"],
+                "status": status,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "query_count": len(queries),
+                "queries": queries,
+                "evidence": compact_evidence(evidence or [], limit=MAX_EVIDENCE),
+                "agent_steps": step_results or [],
+                "verifier": verifier or {},
+                "manual_coverage_review": coverage_review or {},
+            }
+        )
+        with self.partial_lock:
+            partial = read_json(
+                self.partial_path,
+                {
+                    "report_type": "prebid_queries",
+                    "status": "partial",
+                    "project_id": self.project_root.name,
+                    "categories": {},
+                },
+            )
+            if not isinstance(partial, dict):
+                partial = {
+                    "report_type": "prebid_queries",
+                    "status": "partial",
+                    "project_id": self.project_root.name,
+                    "categories": {},
+                }
+            partial.setdefault("categories", {})
+            partial["categories"][category["id"]] = entry
+            partial["updated_at"] = entry["updated_at"]
+            write_json(self.partial_path, partial)
 
     def flagged_evidence(self, flag_ids: list[str]) -> list[dict[str, Any]]:
         wanted = set(flag_ids)
@@ -818,6 +869,7 @@ Malformed output:
             if "answer" in result:
                 draft = result["answer"]
                 self.log(f"PBQ specialist drafted {len(draft.get('queries', []))} query row(s) for {category['title']}.", category["id"])
+                self.save_partial_category(category, draft, "draft", evidence, step_results)
                 break
 
         if draft is None:
@@ -840,6 +892,7 @@ Malformed output:
             category["id"],
             {"warnings": verifier.get("warnings", [])},
         )
+        self.save_partial_category(category, {"queries": queries}, "verified", evidence, step_results, verifier)
         coverage_review = self.call_json(
             self.manual_coverage_gap_prompt(category, queries, evidence, step_results),
             "Return only valid JSON. You find missing practical manual PBQ coverage rows.",
@@ -870,6 +923,7 @@ Malformed output:
                 category["id"],
                 {"warnings": verifier.get("warnings", [])},
             )
+        self.save_partial_category(category, {"queries": queries}, "finalized", evidence, step_results, verifier, coverage_review)
         return normalize_payload(
             {
                 "category_id": category["id"],
