@@ -28,10 +28,9 @@ Reported final test-folder evaluation:
 | Metric | Score |
 |---|---:|
 | Evidence recall | 98.0% |
-| Answer accuracy | 97.8% |
 
-The 98.0% and 97.8% metrics are benchmark-specific. They should be cited with
-the benchmark context, not as universal accuracy claims.
+The 98.0% evidence-recall metric is benchmark-specific. It should be cited
+with the benchmark context, not as a universal state-of-the-art claim.
 
 ## Research Paper
 

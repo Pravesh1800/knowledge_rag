@@ -16,11 +16,10 @@ domain and cluster traversal, relationship-active expansion, hybrid retrieval,
 LLM reranking, and grounded answer generation. On a local test project
 containing 19 documents, 2,761 evidence cards, 119 domains, 248 clusters, and
 35,843 domain relationships, a user-run test-folder evaluation reported 98.0
-percent evidence recall and 97.8 percent answer accuracy. These results
-suggest that Evidence Mesh improves practical retrieval transparency and
-cross-document coverage, while future work should focus on stronger page
-anchoring, controlled graph expansion, streaming interaction, and larger
-benchmark comparisons.
+percent evidence recall. These results suggest that Evidence Mesh improves
+practical retrieval transparency and cross-document coverage, while future work
+should focus on stronger page anchoring, controlled graph expansion, streaming
+interaction, and larger benchmark comparisons.
 
 ## Keywords
 
@@ -462,13 +461,11 @@ The current user-run test-folder evaluation reported strong end-to-end quality:
 | Evaluation | Metric | Score |
 |---|---|---:|
 | Final test-folder evaluation | Evidence recall | 98.0% |
-| Final test-folder evaluation | Answer accuracy | 97.8% |
 
 These metrics are reported as benchmark-specific results for the test folder.
 They should not be interpreted as universal state-of-the-art claims across all
 document collections. The evaluation indicates that the system can recover the
-required evidence and produce correct grounded answers for nearly all tested
-cases in this corpus.
+required evidence for nearly all tested cases in this corpus.
 
 ### 14.1 Example Successful Retrieval
 
@@ -492,12 +489,11 @@ index.
 
 The results show that Evidence Mesh is already useful for practical project
 document QA. The final user-run test-folder result reports 98.0 percent
-evidence recall and 97.8 percent answer accuracy, indicating that the current
-system can recover the required evidence and produce correct grounded answers
-for nearly all tested cases. The result is strongest when described narrowly:
-high evidence recall and answer accuracy on the test-folder benchmark, with
-the system still requiring broader public benchmarking before any general
-state-of-the-art claim.
+evidence recall, indicating that the current system can recover the required
+evidence for nearly all tested cases. The result is strongest when described
+narrowly: high evidence recall on the test-folder benchmark, with the system
+still requiring broader public benchmarking before any general state-of-the-art
+claim.
 
 Compared with naive RAG, Evidence Mesh has several accuracy advantages:
 
@@ -646,11 +642,11 @@ relationships during retrieval, reranking candidate evidence, and forcing final
 answers to cite document and page evidence.
 
 The current user-run test-folder evaluation demonstrates strong performance:
-98.0 percent evidence recall and 97.8 percent answer accuracy. These results
-suggest that the current system is a strong evidence-centric RAG workbench for
-the tested project-document setting. The next research direction is to expand
-the benchmark suite, add public reproducible corpora, and continue tightening
-evidence localization while preserving graph-aware recall gains.
+98.0 percent evidence recall. This result suggests that the current system is a
+strong evidence-centric RAG workbench for the tested project-document setting.
+The next research direction is to expand the benchmark suite, add public
+reproducible corpora, and continue tightening evidence localization while
+preserving graph-aware recall gains.
 
 Evidence Mesh should be understood as a strong domain-specific retrieval
 workbench rather than a finished universal GraphRAG benchmark winner. Its

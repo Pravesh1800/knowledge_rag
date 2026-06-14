@@ -103,7 +103,6 @@ The end-to-end research write-up is available at:
 Headline test-folder results reported for the current system:
 
 - 98.0% evidence recall
-- 97.8% answer accuracy
 
 These metrics are benchmark-specific and should not be read as universal
 state-of-the-art claims. The paper also includes inspected diagnostic eval
