@@ -1,196 +1,208 @@
-# PDF Vision RAG
+# Evidence Mesh
 
-PDF Vision RAG is a local FastAPI web app for uploading mixed tender/project
-documents, indexing them page by page with vision-capable LLMs, building a
-relationship map, searching the indexed corpus, and generating specialist bid
-documents.
+Evidence Mesh is a graph-aware Retrieval-Augmented Generation (RAG) application
+for project documents. It ingests PDFs, spreadsheets, text, and image-based
+source material, builds page-level evidence cards, organizes them into a
+knowledge graph, and answers questions with cited source evidence.
 
-The app supports:
+The public, share-ready application lives in:
 
-- PDF and spreadsheet ingestion
-- page-level topic extraction
-- relationship map generation across topics, communities, and biomes
-- project chat/search
-- generated reports for legal assessment, commercial strategy, financial bonds,
-  pre-bid queries, and pre-qualification requirements
+```text
+core_rag_app/
+```
 
-## 1. Requirements
+## Why This Exists
+
+Most RAG demos retrieve flat chunks. Real project-document work needs more:
+
+- exact answers with document and page citations
+- cross-document evidence
+- graph traversal over related requirements, clauses, tables, and domains
+- visible search traces
+- evaluation reports that diagnose retrieval failures
+
+Evidence Mesh is built as an auditable evidence workbench rather than a black
+box chatbot.
+
+## Core Features
+
+- Project creation and document upload
+- PDF page rendering and spreadsheet ingestion
+- Evidence-card indexing
+- Entity and claim extraction
+- Canonical entity aliasing
+- Domain, cluster, and relationship graph construction
+- Graph-aware hybrid retrieval
+- Adaptive query modes for exact lookup, multi-hop search, comparison,
+  contradiction checks, gap analysis, risk analysis, summaries, and follow-ups
+- LLM reranking
+- Grounded chat with source citations
+- Retrieval evaluation sets with failure diagnosis
+- Professional v2 UI for corpus intake, retrieval, graph inspection, quality,
+  and runtime settings
+
+## Optional Specialist Agents
+
+The reusable core app is in `core_rag_app/`. The repository also contains the
+original tender/project specialist agents at the repository root. These agents
+consume the same indexed evidence, search results, and project graph to produce
+structured reports:
+
+- Project Background
+- Key Information
+- Bid Process Evaluation
+- Legal Assessment
+- Commercial Strategy
+- Financial Bonds
+- Financial Liabilities and Penalties
+- Pre-Bid Queries
+- Pre-Qualification Requirements
+- Risk Register
+- Discrepancy Register
+
+They are shown as an optional layer in the architecture because they are
+domain-specific workflows built on top of the retrieval core, not required for
+the generic Evidence Mesh application.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    U["User"] --> UI["Evidence Mesh UI"]
+    UI --> API["FastAPI API"]
+    API --> P["Project workspace"]
+    P --> I["Ingestion"]
+    I --> X["Page and table extraction"]
+    X --> C["Evidence cards"]
+    C --> EC["Entity and claim anchors"]
+    EC --> CA["Canonical entities"]
+    C --> G["Knowledge graph"]
+    G --> D["Domains and clusters"]
+    G --> R["Relationships"]
+    D --> S["Graph-aware search"]
+    R --> S
+    CA --> S
+    EC --> S
+    S --> RR["Reranker"]
+    RR --> A["Grounded answer"]
+    A --> UI
+    RR --> AG["Optional specialist agents"]
+    AG --> REP["Structured reports"]
+    REP --> UI
+```
+
+More detail is available in
+[core_rag_app/docs/architecture.md](core_rag_app/docs/architecture.md).
+
+## Research Paper
+
+The end-to-end research write-up is available at:
+
+[core_rag_app/docs/research_paper.md](core_rag_app/docs/research_paper.md)
+
+Headline test-folder results reported for the current system:
+
+- 98.0% evidence recall
+- 97.8% answer accuracy
+
+These metrics are benchmark-specific and should not be read as universal
+state-of-the-art claims. The paper also includes inspected diagnostic eval
+reports and remaining limitations.
+
+## Quick Start
 
 Use Python 3.12 or newer.
 
-Install Git if you are cloning the repository:
-
 ```powershell
-git clone https://github.com/Pravesh1800/knowledge_rag.git
-cd knowledge_rag
-```
-
-Create and activate a virtual environment:
-
-```powershell
+git clone https://github.com/<your-org>/knowledge_rag.git
+cd knowledge_rag\core_rag_app
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-```
-
-Install Python libraries:
-
-```powershell
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-## 2. Environment Setup
-
-Create a `.env` file in the project root:
+Create a local `.env` file:
 
 ```powershell
-New-Item .env -ItemType File
+Copy-Item .env.example .env
 ```
 
-Add your OpenRouter configuration:
+Then add your provider key and model settings:
+
+```env
+LLM_PROVIDER=openrouter
+LLM_API_KEY=
+LLM_MODEL=google/gemini-3.1-flash-lite
+LLM_MAP_MODEL=deepseek/deepseek-v4-flash
+LLM_SEARCH_MODEL=deepseek/deepseek-v4-flash
+
+OPENROUTER_API_KEY=your_openrouter_key_here
+OPENAI_API_KEY=your_openai_key_here
+```
+
+Run the app:
+
+```powershell
+python -m uvicorn app:app --host 127.0.0.1 --port 8021
+```
+
+Open:
 
 ```text
-OPENROUTER_API_KEY=your_openrouter_api_key_here
-OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-OPENROUTER_SITE_URL=http://localhost:8020
-OPENROUTER_APP_NAME=PDF Vision RAG
-
-OPENROUTER_MODEL=google/gemini-3.1-flash-lite
-OPENROUTER_SEARCH_MODEL=deepseek/deepseek-v4-flash
-OPENROUTER_MAP_MODEL=google/gemini-3.1-flash-lite
-
-OPENROUTER_LEGAL_AGENT_MODEL=deepseek/deepseek-v4.1
-OPENROUTER_COMMERCIAL_AGENT_MODEL=deepseek/deepseek-v4.1
-OPENROUTER_FINANCIAL_AGENT_MODEL=deepseek/deepseek-v4.1
-OPENROUTER_PREBID_AGENT_MODEL=deepseek/deepseek-v4.1
-OPENROUTER_PREQUAL_AGENT_MODEL=deepseek/deepseek-v4.1
+http://127.0.0.1:8021/v2
 ```
 
-You can change the model names if your OpenRouter account uses different model
-IDs. The `.env` file is ignored by Git and should not be committed.
+## Basic Workflow
 
-## 3. Run the Web App
+1. Create a project.
+2. Upload PDFs, spreadsheets, text files, or images.
+3. Build the index and knowledge graph.
+4. Ask questions in Retrieval chat.
+5. Inspect retrieved sources, graph trace, and top evidence.
+6. Run evaluation sets after changing retrieval logic.
 
-Start the local server:
+## CLI Workflow
+
+From `core_rag_app/`:
 
 ```powershell
-python -m uvicorn app:app --host 127.0.0.1 --port 8020
+python ingest.py add C:\path\to\documents
+python indexer.py --build-embeddings --build-entity-claims
+python entity_canonicalizer.py build
+python knowledge_graph.py --build-summaries
+python searcher.py "Who pays for construction power?" --max-hits 12
+python evaluator.py eval_sets/example_retrieval_eval.json --max-hits 12
 ```
 
-Open the app:
+## Privacy and Data Safety
 
-```text
-http://localhost:8020
-```
+The repository is configured so private runtime data is not committed:
 
-## 4. Basic Workflow
+- `.env`
+- uploaded documents
+- project indexes
+- generated search results
+- cache files
+- logs
+- PDFs, spreadsheets, CSVs, and zip exports
 
-1. Create or open a project in the web UI.
-2. Upload all required documents.
-3. Confirm the document list is complete.
-4. Click `Start index generation`.
-5. Wait for indexing and relationship mapping to complete.
-6. Use project chat or run generated-doc agents.
+Only source code, docs, config templates, and small evaluation fixtures should
+be public.
 
-Generated reports are saved under:
-
-```text
-projects/<project_id>/reports/
-```
-
-Indexes and relationship maps are saved under:
-
-```text
-projects/<project_id>/indexes/
-```
-
-These folders are ignored by Git because they can contain private documents,
-large outputs, API-derived data, and generated reports.
-
-## 5. Generated Documents
-
-The UI can generate:
-
-- Pre-Bid Queries
-- Pre-Qualification Requirements
-- Commercial Drivers and Strategy to WIN
-- Financial Bonds
-- Legal Assessment
-
-Each report has progress tracking in the UI. Completed reports remain visible
-even if a later rerun fails because of an API/key limit.
-
-Several reports also include `Download Excel` buttons in the UI.
-
-## 6. Optional Public Link With ngrok
-
-If ngrok is installed and authenticated, expose the local app:
+## Verification
 
 ```powershell
-ngrok http 8020
+cd core_rag_app
+python -m py_compile app.py ingest.py indexer.py embeddings.py entity_claims.py entity_canonicalizer.py community_summaries.py query_modes.py reranker.py knowledge_graph.py searcher.py evaluator.py
 ```
 
-Use the HTTPS forwarding URL shown by ngrok.
+## License
 
-Keep the FastAPI app running while using the ngrok URL.
+MIT License. See [LICENSE](LICENSE).
 
-## 7. CLI Commands
+## Disclaimer
 
-Most work should be done through the UI, but the pipeline scripts can also be
-run directly.
-
-Ingest a file or folder:
-
-```powershell
-python ingest.py add "C:\path\to\file-or-folder"
-```
-
-Build the topic index:
-
-```powershell
-python indexer.py --reset
-```
-
-Build the relationship map:
-
-```powershell
-python relationship_map.py
-```
-
-Search the indexed corpus:
-
-```powershell
-python searcher.py "commercial terms and risks"
-```
-
-Generate reports from the command line:
-
-```powershell
-python legal_assessment.py projects\<project_id>
-python commercial_strategy.py projects\<project_id>
-python financial_bonds.py projects\<project_id>
-python prebid_queries.py projects\<project_id>
-python prequalification_requirements.py projects\<project_id>
-```
-
-## 8. Smoke Checks
-
-Check Python syntax:
-
-```powershell
-python -m py_compile app.py indexer.py ingest.py relationship_map.py searcher.py legal_assessment.py commercial_strategy.py financial_bonds.py prebid_queries.py prequalification_requirements.py
-```
-
-Check the running API:
-
-```powershell
-Invoke-RestMethod http://localhost:8020/api/projects
-```
-
-## 9. Notes
-
-- Do not commit `.env`, uploaded documents, project indexes, reports, logs, or
-  generated Excel/CSV/PDF files.
-- Large indexing and relationship-map jobs can take time and consume API quota.
-- If a generated-doc agent fails with an OpenRouter daily/key limit error,
-  update the key or quota and rerun that report.
+Evidence Mesh is a research and developer tool for document retrieval and
+analysis. Do not use generated answers as legal, financial, engineering, or
+contractual advice without expert human review.
