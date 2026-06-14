@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Evidence Mesh</title>
+    <link rel="stylesheet" href="/static/styles.css?v=evidence-mesh-pages-4" />
+  </head>
+  <body>
+    <main class="app">
+      <aside class="side">
+        <a class="logo" href="#/overview" aria-label="Evidence Mesh overview">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M32 6 52 18v28L32 58 12 46V18L32 6Z"></path>
+            <path d="M32 6v22m20-10-20 10m-20-10 20 10m0 0v30m0-30L12 46m20-18 20 18"></path>
+          </svg>
+        </a>
+        <nav id="nav" class="nav" aria-label="Main navigation">
+          <a href="#/overview" data-route="overview" class="active"><span data-icon="home"></span>Overview</a>
+          <a href="#/projects" data-route="projects"><span data-icon="folder"></span>Projects</a>
+          <a href="#/documents" data-route="documents"><span data-icon="doc"></span>Documents</a>
+          <a href="#/graph" data-route="graph"><span data-icon="graph"></span>Graph</a>
+          <a href="#/chat" data-route="chat"><span data-icon="chat"></span>Chat</a>
+          <a href="#/evaluations" data-route="evaluations"><span data-icon="eval"></span>Evaluations</a>
+          <a href="#/settings" data-route="settings"><span data-icon="settings"></span>Settings</a>
+        </nav>
+        <div class="side-foot">
+          <div class="status-dot"></div>
+          <div>
+            <strong>Mesh Engine</strong>
+            <span id="engine-status">Ready</span>
+          </div>
+        </div>
+      </aside>
+
+      <section class="main">
+        <header class="topbar">
+          <div>
+            <h1 id="page-title">Overview</h1>
+            <p id="page-subtitle">Command center for your evidence graph.</p>
+          </div>
+          <div class="top-actions">
+            <select id="project-select" aria-label="Select project"></select>
+            <form id="project-form" class="quick-create">
+              <input id="project-name" type="text" placeholder="New project" />
+              <button type="submit">Create</button>
+            </form>
+            <button id="refresh" class="icon-button" type="button" title="Refresh">
+              <span data-icon="refresh"></span>
+            </button>
+          </div>
+        </header>
+
+        <section id="empty-state" class="page empty-page">
+          <div class="empty-orbit">
+            <div class="empty-core"></div>
+            <i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <h2>Create a project or choose one from the top bar.</h2>
+          <p>The app is now split into focused spaces for documents, graph exploration, chat, evaluations, and settings.</p>
+        </section>
+
+        <div id="project-view" class="hidden">
+          <section id="route-overview" class="page active-page">
+            <div class="hero-layout">
+              <div class="hero-copy">
+                <h2>Good morning, Pravesh</h2>
+                <p id="overview-copy">Your knowledge graph is ready when your corpus is.</p>
+                <div class="hero-actions">
+                  <a class="primary-link" href="#/documents">Add documents</a>
+                  <button id="build-index-overview" type="button">Build mesh</button>
+                </div>
+              </div>
+              <div class="remotion-card">
+                <div class="scene-stage" aria-label="Animated evidence mesh preview">
+                  <svg viewBox="0 0 560 300" aria-hidden="true">
+                    <path class="scene-line l1" d="M280 150 C180 62 86 72 58 156"></path>
+                    <path class="scene-line l2" d="M280 150 C392 52 492 82 510 158"></path>
+                    <path class="scene-line l3" d="M280 150 C176 248 94 232 58 156"></path>
+                    <path class="scene-line l4" d="M280 150 C390 250 492 226 510 158"></path>
+                    <path class="scene-line l5" d="M280 150 C280 64 282 38 282 24"></path>
+                  </svg>
+                  <div class="scene-node center-node"><strong id="scene-project">Corpus</strong><span id="scene-cards">0 cards</span></div>
+                  <div class="scene-node s1">Domains</div>
+                  <div class="scene-node s2">Clusters</div>
+                  <div class="scene-node s3">Evidence</div>
+                  <div class="scene-node s4">Relations</div>
+                  <div class="scene-caption">Motion scene: index -> cluster -> relate -> retrieve</div>
+                </div>
+              </div>
+            </div>
+            <div class="stat-row">
+              <article><span>Documents</span><strong id="metric-docs">0</strong><small id="document-count-pill">0 files</small></article>
+              <article><span>Pages indexed</span><strong id="metric-pages">0</strong><small id="metric-page-total">0 total</small></article>
+              <article><span>Evidence cards</span><strong id="metric-cards">0</strong><small>retrievable units</small></article>
+              <article><span>Relationships</span><strong id="metric-relationships">0</strong><small>linked evidence</small></article>
+            </div>
+            <div class="overview-grid">
+              <section class="panel">
+                <div class="panel-head"><h3>Recent activity</h3><a href="#/documents">View documents</a></div>
+                <div id="activity-list" class="activity-list"></div>
+              </section>
+              <section class="panel">
+                <div class="panel-head"><h3>System health</h3><a href="#/settings">Settings</a></div>
+                <div id="health-list" class="health-list"></div>
+              </section>
+            </div>
+          </section>
+
+          <section id="route-projects" class="page">
+            <div class="section-shell">
+              <div class="section-intro"><h2>Projects</h2><p>Separate corpora stay isolated. Pick one and move through the workflow page by page.</p></div>
+              <div id="project-grid" class="project-grid"></div>
+            </div>
+          </section>
+
+          <section id="route-documents" class="page">
+            <div class="documents-page">
+              <section class="panel ingest-panel">
+                <div class="panel-head"><h3>Document ingestion</h3><span id="upload-stage">Ready</span></div>
+                <form id="upload-form" class="dropzone">
+                  <input id="files" type="file" multiple />
+                  <div>
+                    <strong>Drop in the full corpus</strong>
+                    <span>Choose files in multiple rounds. The staged list below is what will upload.</span>
+                  </div>
+                  <div class="staged-head">
+                    <span id="staged-upload-count">No files selected</span>
+                    <button id="clear-staged-files" type="button" disabled>Clear selection</button>
+                  </div>
+                  <div id="staged-upload-list" class="staged-upload-list">
+                    <div class="staged-empty">Choose files in multiple rounds. They will stay here until you upload or remove them.</div>
+                  </div>
+                  <button id="upload-submit" type="submit" disabled>Upload selected files</button>
+                </form>
+                <div class="build-line">
+                  <div>
+                    <strong id="status-title">Waiting for documents</strong>
+                    <span id="engine-detail">Upload files before building the evidence mesh.</span>
+                  </div>
+                  <button id="build-index" type="button">Build mesh</button>
+                </div>
+                <div class="progress-track"><div id="progress-bar"></div></div>
+                <div id="progress-label" class="progress-label">No documents uploaded yet.</div>
+              </section>
+              <section class="panel">
+                <div class="panel-head"><h3>Document queue</h3><span id="queue-count">0 files</span></div>
+                <div id="documents-list" class="document-list"></div>
+              </section>
+            </div>
+          </section>
+
+          <section id="route-graph" class="page">
+            <div class="graph-page">
+              <aside class="panel graph-controls">
+                <h3>Graph layers</h3>
+                <label><input type="checkbox" checked /> Domains <span id="metric-domains">0</span></label>
+                <label><input type="checkbox" checked /> Clusters <span id="metric-clusters">0</span></label>
+                <label><input type="checkbox" checked /> Evidence cards <span id="graph-card-count">0</span></label>
+                <label><input type="checkbox" checked /> Relationships <span id="graph-relation-count">0</span></label>
+                <h3>Filters</h3>
+                <select><option>All domains</option><option>Requirements</option><option>Operations</option></select>
+                <select><option>All documents</option></select>
+                <button type="button">Apply filters</button>
+              </aside>
+              <section class="graph-canvas panel">
+                <div class="canvas-toolbar">
+                  <div><h2>Graph Explorer</h2><p>Explore domains, clusters, and evidence relationships.</p></div>
+                  <button type="button">Export graph</button>
+                </div>
+                <div class="force-graph" aria-label="Evidence graph visualization">
+                  <svg viewBox="0 0 900 620" preserveAspectRatio="none">
+                    <path d="M450 310 C260 88 142 96 104 250"></path>
+                    <path d="M450 310 C636 88 778 116 804 260"></path>
+                    <path d="M450 310 C228 456 150 522 98 428"></path>
+                    <path d="M450 310 C668 456 758 526 816 418"></path>
+                    <path d="M450 310 C450 142 450 82 450 42"></path>
+                    <path d="M450 310 C450 478 450 546 450 580"></path>
+                    <path d="M104 250 C298 188 596 190 804 260"></path>
+                    <path d="M98 428 C312 520 616 518 816 418"></path>
+                  </svg>
+                  <div class="graph-node root"><strong id="graph-root-name">Corpus</strong><span id="graph-root-sub">0 cards</span></div>
+                  <div class="graph-node g1"><strong>Requirements</strong><span>domain</span></div>
+                  <div class="graph-node g2"><strong>Design</strong><span>domain</span></div>
+                  <div class="graph-node g3"><strong>Operations</strong><span>domain</span></div>
+                  <div class="graph-node g4"><strong>Risk</strong><span>domain</span></div>
+                  <div class="spark sp1"></div><div class="spark sp2"></div><div class="spark sp3"></div><div class="spark sp4"></div><div class="spark sp5"></div>
+                </div>
+              </section>
+              <aside class="panel inspector">
+                <h3>Inspector</h3>
+                <div id="graph-inspector"></div>
+              </aside>
+            </div>
+          </section>
+
+          <section id="route-chat" class="page">
+            <div class="chat-page">
+              <section class="chat-column panel">
+                <div class="panel-head"><h3>Evidence Chat</h3><button id="new-chat" type="button">New chat</button></div>
+                <div id="chat-log" class="chat-log"></div>
+                <form id="chat-form" class="chat-form">
+                  <input id="question" type="text" placeholder="Ask about requirements, risks, conflicts, missing data..." />
+                  <button type="submit">Send</button>
+                </form>
+              </section>
+              <aside class="panel evidence-side">
+                <h3>Evidence timeline</h3>
+                <div id="evidence-timeline" class="timeline"></div>
+                <h3>Top evidence</h3>
+                <div id="top-evidence" class="source-grid"></div>
+              </aside>
+            </div>
+          </section>
+
+          <section id="route-evaluations" class="page">
+            <div class="eval-page">
+              <section class="panel">
+                <div class="panel-head"><h3>Evaluation sets</h3><span>Quality guardrails</span></div>
+                <div class="eval-hero">
+                  <strong>Stop guessing retrieval quality.</strong>
+                  <p>Use real questions with expected evidence to detect regressions in cards, pages, cross-document retrieval, and hallucination risk.</p>
+                </div>
+                <div class="eval-grid">
+                  <article><strong>Evidence match</strong><span>Expected card, document, page, and terms.</span></article>
+                  <article><strong>Failure diagnosis</strong><span>Domain, cluster, card, page, or search-path misses.</span></article>
+                  <article><strong>Regression ready</strong><span>Reports are stored under indexes/eval_reports.</span></article>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section id="route-settings" class="page">
+            <div class="settings-page">
+              <section class="panel">
+                <div class="panel-head"><h3>LLM provider</h3><span id="llm-key-state">Loading</span></div>
+                <form id="llm-settings-form" class="settings-form">
+                  <label>
+                    <span>Provider</span>
+                    <select id="llm-provider">
+                      <option value="openrouter">OpenRouter</option>
+                      <option value="openai">OpenAI</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>API key</span>
+                    <input id="llm-api-key" type="password" autocomplete="off" placeholder="Leave blank to keep saved key" />
+                  </label>
+                  <label>
+                    <span>Default model</span>
+                    <input id="llm-model" type="text" placeholder="Provider default model" />
+                  </label>
+                  <label>
+                    <span>Graph / map model</span>
+                    <input id="llm-map-model" type="text" placeholder="Model for clusters, domains, relationships" />
+                  </label>
+                  <label>
+                    <span>Search model</span>
+                    <input id="llm-search-model" type="text" placeholder="Model for search planning and reranking" />
+                  </label>
+                  <div class="settings-actions">
+                    <button type="submit">Save provider</button>
+                    <span id="settings-save-state"></span>
+                  </div>
+                </form>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head"><h3>Model names in .env</h3><span>Stored for both providers</span></div>
+                <div class="model-grid">
+                  <div>
+                    <h4>OpenRouter</h4>
+                    <label><span>OPENROUTER_MODEL</span><input id="openrouter-model" type="text" /></label>
+                    <label><span>OPENROUTER_MAP_MODEL</span><input id="openrouter-map-model" type="text" /></label>
+                    <label><span>OPENROUTER_SEARCH_MODEL</span><input id="openrouter-search-model" type="text" /></label>
+                  </div>
+                  <div>
+                    <h4>OpenAI</h4>
+                    <label><span>OPENAI_MODEL</span><input id="openai-model" type="text" /></label>
+                    <label><span>OPENAI_MAP_MODEL</span><input id="openai-map-model" type="text" /></label>
+                    <label><span>OPENAI_SEARCH_MODEL</span><input id="openai-search-model" type="text" /></label>
+                  </div>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head"><h3>Storage</h3><span>PostgreSQL primary</span></div>
+                <div class="settings-list">
+                  <div><strong>PostgreSQL</strong><span>Primary store for documents, pages, cards, graph, search, and build runs.</span></div>
+                  <div><strong>DATABASE_URL</strong><span>Required unless throwaway JSON debug mode is explicitly enabled.</span></div>
+                  <div><strong>Project isolation</strong><span>Each workspace writes with its project id.</span></div>
+                </div>
+              </section>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+    <script src="/static/app.js?v=evidence-mesh-agentic-chat-1"></script>
+  </body>
+</html>

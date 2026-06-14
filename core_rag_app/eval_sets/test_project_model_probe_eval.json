@@ -1,0 +1,39 @@
+{
+  "schema_version": "evaluation_set.v1.0",
+  "name": "test_project_model_probe_eval",
+  "description": "Single-case model-ranked probe for endpoint/runtime validation.",
+  "project_id": "test",
+  "case_count": 1,
+  "cases": [
+    {
+      "id": "power_supply_responsibility",
+      "question": "Where does the project say who pays for construction power and the new power connection?",
+      "expected_answer_points": [
+        "construction power paid by contractor",
+        "new power connection paid by employer"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_d386f55df4319a7b",
+          "document_name": "Volume-2 Epmloyer's Requirement (ER).pdf",
+          "page_no": 18,
+          "must_contain_terms": [
+            "Power",
+            "Supply"
+          ]
+        },
+        {
+          "card_id": "card_0f6fb88b0746d5a0",
+          "document_name": "Instruction to Tendrer (ITB).pdf",
+          "page_no": 47,
+          "must_contain_terms": [
+            "Power",
+            "Supply"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    }
+  ]
+}

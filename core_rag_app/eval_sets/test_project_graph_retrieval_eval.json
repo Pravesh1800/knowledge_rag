@@ -1,0 +1,707 @@
+{
+  "schema_version": "evaluation_set.v1.0",
+  "name": "test_project_graph_retrieval_eval",
+  "description": "Auto-built benchmark from the real test project. Includes practical project questions and high-quality card-linked graph relationships.",
+  "project_id": "test",
+  "case_count": 24,
+  "cases": [
+    {
+      "id": "power_supply_responsibility",
+      "question": "Where does the project say who pays for construction power and the new power connection?",
+      "expected_answer_points": [
+        "construction power paid by contractor",
+        "new power connection paid by employer"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_d386f55df4319a7b",
+          "document_name": "Volume-2 Epmloyer's Requirement (ER).pdf",
+          "page_no": 18,
+          "must_contain_terms": [
+            "Power",
+            "Supply"
+          ]
+        },
+        {
+          "card_id": "card_0f6fb88b0746d5a0",
+          "document_name": "Instruction to Tendrer (ITB).pdf",
+          "page_no": 47,
+          "must_contain_terms": [
+            "Power",
+            "Supply"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "employer_identity",
+      "question": "Who is identified as the Employer for the 910 MLD WTP Panjrapur tender?",
+      "expected_answer_points": [
+        "Brihanmumbai Municipal Corporation",
+        "Employer"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_28a0dcd097b3e443",
+          "document_name": "Instruction to Tendrer (ITB).pdf",
+          "page_no": 7,
+          "must_contain_terms": [
+            "Instruction",
+            "Bidders"
+          ]
+        }
+      ],
+      "expected_cross_document": false,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "operating_license_parties",
+      "question": "Which source identifies the parties to the Operating Licence between the Employer and Contractor?",
+      "expected_answer_points": [
+        "Brihanmumbai Municipal Corporation",
+        "Contractor",
+        "Operating Licence"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_5416272bded6e222",
+          "document_name": "Volume-4 Contract Forms.pdf",
+          "page_no": 22,
+          "must_contain_terms": [
+            "Volume-4",
+            "Forms"
+          ]
+        }
+      ],
+      "expected_cross_document": false,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "itb_defined_terms",
+      "question": "Where are the ITB defined terms such as Employer, Contract Forms, GST, JV, and Base Date listed?",
+      "expected_answer_points": [
+        "Employer",
+        "Contract Forms",
+        "GST",
+        "JV"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_730a2739692b9182",
+          "document_name": "Instruction to Tendrer (ITB).pdf",
+          "page_no": 40,
+          "must_contain_terms": [
+            "Part",
+            "General"
+          ]
+        }
+      ],
+      "expected_cross_document": false,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "pre_bid_meeting_process",
+      "question": "What source explains the pre-bid meeting process and written question submission timing?",
+      "expected_answer_points": [
+        "pre-bid meeting",
+        "questions",
+        "3 working days"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_9d2f468da24e5db3",
+          "document_name": "Instruction to Tendrer (ITB).pdf",
+          "page_no": 14,
+          "must_contain_terms": [
+            "Pre-Bid",
+            "Meeting"
+          ]
+        }
+      ],
+      "expected_cross_document": false,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "price_schedule_notes",
+      "question": "Which evidence explains the whole life cost spreadsheet notes, discount rate, and cost limits?",
+      "expected_answer_points": [
+        "Whole Life Cost",
+        "discount rate",
+        "cost centre limits"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_2b436cb6386b27ef",
+          "document_name": "Annexure02CorrigendumVIIIPriceScheduleWLCRevP2.xls",
+          "page_no": 1,
+          "must_contain_terms": [
+            "Pricing",
+            "Schedule"
+          ]
+        }
+      ],
+      "expected_cross_document": false,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_01_continuation",
+      "question": "Which cited evidence connects Price Schedule A1.1 Preliminaries and General Items with Volume-6 Price Schedule WLC_v4, and what is the continuation between them? Context: The related domain 'Design-Build Phase Pricing' provides a more detailed and complete pricing breakdown for the same design-build cost centers outlined in the main domain, effec...",
+      "expected_answer_points": [
+        "Price Schedule A1.1 Preliminaries and General Items",
+        "Volume-6 Price Schedule WLC_v4",
+        "continuation"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_74b45a7d05bfd549",
+          "document_name": "CorrigendumIIIwithAnnexures0411.pdf",
+          "page_no": 94,
+          "must_contain_terms": [
+            "Price",
+            "Schedule"
+          ]
+        },
+        {
+          "card_id": "card_5de4d7ad5ca9da08",
+          "document_name": "Volume-6 Price Schedule WLC.pdf",
+          "page_no": 4,
+          "must_contain_terms": [
+            "Volume-6",
+            "Price"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_02_shared_context",
+      "question": "Which cited evidence connects Volume 2B - Pressure Gauges Specifications with Corrigendum VIII - 910 MLD WTP at Panjrapur, and what is the shared_context between them? Context: Both domains describe parts of the same larger project: the 910 MLD Water Treatment Plant at Panjrapur. The main domain provides technical specifications for flow control equipm...",
+      "expected_answer_points": [
+        "Volume 2B - Pressure Gauges Specifications",
+        "Corrigendum VIII - 910 MLD WTP at Panjrapur",
+        "shared_context"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_859d7d85ec6ee09c",
+          "document_name": "Volume-2B Mech Specifications.pdf",
+          "page_no": 38,
+          "must_contain_terms": [
+            "Pressure",
+            "Gauges"
+          ]
+        },
+        {
+          "card_id": "card_0116febf7a2927cb",
+          "document_name": "CorrigendumVIIIwithAnnexures.pdf",
+          "page_no": 1,
+          "must_contain_terms": [
+            "Corrigendum",
+            "VIII"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_03_shared_context",
+      "question": "Which cited evidence connects Technical Requirements for 910 MLD WTP Components with Volume 2B - General and Particular Mechanical Specification, and what is the shared_context between them? Context: Both domains describe the same 910 MLD WTP project, with the main domain providing detailed technical specifications for process equipment and the related domain providing the o...",
+      "expected_answer_points": [
+        "Technical Requirements for 910 MLD WTP Components",
+        "Volume 2B - General and Particular Mechanical Specification",
+        "shared_context"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_2af4c7aa2b6d8bfd",
+          "document_name": "Instruction to Tendrer (ITB).pdf",
+          "page_no": 64,
+          "must_contain_terms": [
+            "Technical",
+            "Components"
+          ]
+        },
+        {
+          "card_id": "card_aa917eaf10095c04",
+          "document_name": "Volume-2B Mech Specifications.pdf",
+          "page_no": 1,
+          "must_contain_terms": [
+            "General",
+            "Particular"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_04_other",
+      "question": "Which cited evidence connects Volume 2 - Appendix A_v2 with Price Schedule A1.2 Design, and what is the other between them? Context: The Appendices and Reference (main domain) provide specifications, performance requirements, approved supplier lists, and other technical details that are directly referenced an...",
+      "expected_answer_points": [
+        "Volume 2 - Appendix A_v2",
+        "Price Schedule A1.2 Design",
+        "other"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_1a09e1f662ee35e4",
+          "document_name": "Volume-2 Epmloyer's Requirement (ER).pdf",
+          "page_no": 422,
+          "must_contain_terms": [
+            "Appendix",
+            "APPENDIX"
+          ]
+        },
+        {
+          "card_id": "card_e8d0552ece0b65c3",
+          "document_name": "CorrigendumIIIwithAnnexures0411.pdf",
+          "page_no": 95,
+          "must_contain_terms": [
+            "Price",
+            "Schedule"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_05_dependency",
+      "question": "Which cited evidence connects Form - 100kV EHV Cable Specifications with EHV MV and LV Power and Control Cable Standards_v2, and what is the dependency between them? Context: The main domain provides detailed electrical and instrumentation specifications for cables, cable glands, lugs, trays, and installation practices that are essential for the rela...",
+      "expected_answer_points": [
+        "Form - 100kV EHV Cable Specifications",
+        "EHV MV and LV Power and Control Cable Standards_v2",
+        "dependency"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_cfa497f1b17c0af3",
+          "document_name": "Instruction to Tendrer (ITB).pdf",
+          "page_no": 208,
+          "must_contain_terms": [
+            "Form",
+            "Cable"
+          ]
+        },
+        {
+          "card_id": "card_9e2445c0fa1a2d24",
+          "document_name": "Volume-2C EI Specifications.pdf",
+          "page_no": 133,
+          "must_contain_terms": [
+            "Power",
+            "Control"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_06_shared_context",
+      "question": "Which cited evidence connects Annexure 1 List of Foreign Imported Components with Panjrapur WTP Lay Out of Surge Vessel System, and what is the shared_context between them? Context: Both domains pertain to the Panjrapur Water Treatment Plant project. The main domain includes annexures and pricing for the project, while the related domain provides engineerin...",
+      "expected_answer_points": [
+        "Annexure 1 List of Foreign Imported Components",
+        "Panjrapur WTP Lay Out of Surge Vessel System",
+        "shared_context"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_f86697b769ad7216",
+          "document_name": "Volume-6 Price Schedule WLC.pdf",
+          "page_no": 52,
+          "must_contain_terms": [
+            "Annexure",
+            "List"
+          ]
+        },
+        {
+          "card_id": "card_dd9ed674777f8a96",
+          "document_name": "Volume-5 Background Information Part2.pdf",
+          "page_no": 1,
+          "must_contain_terms": [
+            "Panjrapur",
+            "Surge"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_07_dependency",
+      "question": "Which cited evidence connects Volume 2 - Design Requirements with Price Schedule C_v3, and what is the dependency between them? Context: The design and engineering decisions directly determine the costs that are input into the whole life cost calculation. The WLC is dependent on design choices.",
+      "expected_answer_points": [
+        "Volume 2 - Design Requirements",
+        "Price Schedule C_v3",
+        "dependency"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_758309a321808198",
+          "document_name": "Volume-2 Epmloyer's Requirement (ER).pdf",
+          "page_no": 75,
+          "must_contain_terms": [
+            "Design",
+            "Works"
+          ]
+        },
+        {
+          "card_id": "card_ff95a1414089c8b1",
+          "document_name": "Annexure14CorrigendumIIIPriceScheduleWLCRevP1.xls",
+          "page_no": 11,
+          "must_contain_terms": [
+            "Price",
+            "Schedule"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_08_continuation",
+      "question": "Which cited evidence connects Volume 2 - Design Requirements with Price Schedule B, and what is the continuation between them? Context: The Operation & Maintenance pricing schedules are the direct continuation and cost extension of the design and engineering specifications. The design defined in the main domain...",
+      "expected_answer_points": [
+        "Volume 2 - Design Requirements",
+        "Price Schedule B",
+        "continuation"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_758309a321808198",
+          "document_name": "Volume-2 Epmloyer's Requirement (ER).pdf",
+          "page_no": 75,
+          "must_contain_terms": [
+            "Design",
+            "Works"
+          ]
+        },
+        {
+          "card_id": "card_63a5a5a417a1ed7b",
+          "document_name": "Annexure02CorrigendumVIIIPriceScheduleWLCRevP2.xls",
+          "page_no": 6,
+          "must_contain_terms": [
+            "Price",
+            "Schedule"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_09_dependency",
+      "question": "Which cited evidence connects Panjrapur WTP Asset Replacement Schedule_v3 with Panjrapur WTP Whole Life Cost Summary, and what is the dependency between them? Context: The Asset Replacement Schedule (main domain) provides detailed replacement costs and timing that are directly used as inputs to calculate the Asset Replacement Expenditure NPV i...",
+      "expected_answer_points": [
+        "Panjrapur WTP Asset Replacement Schedule_v3",
+        "Panjrapur WTP Whole Life Cost Summary",
+        "dependency"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_8bec2b2359841566",
+          "document_name": "Volume-6 Price Schedule WLC.xls",
+          "page_no": 9,
+          "must_contain_terms": [
+            "Panjrapur",
+            "Asset"
+          ]
+        },
+        {
+          "card_id": "card_1476ad8a7f14b236",
+          "document_name": "Volume-6 Price Schedule WLC.pdf",
+          "page_no": 54,
+          "must_contain_terms": [
+            "Panjrapur",
+            "Whole"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_10_prerequisite",
+      "question": "Which cited evidence connects Price Schedule A1.3 with Volume 2 - Operation Service Performance Requirements_v2, and what is the prerequisite between them? Context: The Design-Build Phase establishes the infrastructure and pricing that must be completed before the Operation and Maintenance phase can begin. The cost centers and systems price...",
+      "expected_answer_points": [
+        "Price Schedule A1.3",
+        "Volume 2 - Operation Service Performance Requirements_v2",
+        "prerequisite"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_b6cdbebc88646b06",
+          "document_name": "Annexure02CorrigendumVIIIPriceScheduleWLCRevP2.xls",
+          "page_no": 2,
+          "must_contain_terms": [
+            "Price",
+            "Schedule"
+          ]
+        },
+        {
+          "card_id": "card_8c96a90f42c48c03",
+          "document_name": "Volume-2 Epmloyer's Requirement (ER).pdf",
+          "page_no": 314,
+          "must_contain_terms": [
+            "Operation",
+            "Service"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_11_continuation",
+      "question": "Which cited evidence connects Price Schedule B with Price Schedule B_v7, and what is the continuation between them? Context: The related domain continues and extends the pricing schedules and details from the main domain, with identical or closely matching tables and data across multiple pages and clu...",
+      "expected_answer_points": [
+        "Price Schedule B",
+        "Price Schedule B_v7",
+        "continuation"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_63a5a5a417a1ed7b",
+          "document_name": "Annexure02CorrigendumVIIIPriceScheduleWLCRevP2.xls",
+          "page_no": 6,
+          "must_contain_terms": [
+            "Price",
+            "Schedule"
+          ]
+        },
+        {
+          "card_id": "card_6ed90103ffd3a7b3",
+          "document_name": "Annexure14CorrigendumIIIPriceScheduleWLCRevP1.xls",
+          "page_no": 6,
+          "must_contain_terms": [
+            "Price",
+            "Schedule"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_12_evidence",
+      "question": "Which cited evidence connects Pricing Schedule A1 Grand Summary_v2 with Volume 2 - Design Requirements, and what is the evidence between them? Context: The pricing schedules for Design-Build contract specify costs for design, construction, testing, and training, which are directly supported by the detailed design requirements a...",
+      "expected_answer_points": [
+        "Pricing Schedule A1 Grand Summary_v2",
+        "Volume 2 - Design Requirements",
+        "evidence"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_21bb8b520fbd6238",
+          "document_name": "Annexure14CorrigendumIIIPriceScheduleWLCRevP1.xls",
+          "page_no": 5,
+          "must_contain_terms": [
+            "Pricing",
+            "Schedule"
+          ]
+        },
+        {
+          "card_id": "card_758309a321808198",
+          "document_name": "Volume-2 Epmloyer's Requirement (ER).pdf",
+          "page_no": 75,
+          "must_contain_terms": [
+            "Design",
+            "Works"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_13_evidence",
+      "question": "Which cited evidence connects Volume-3 Schedule of Payment_v19 with Price Schedules B Cost Centres (Operation & Maintenance Services)_v2, and what is the evidence between them? Context: The related domain (O&M Pricing and Operational Data) provides specific pricing rates and operational data that directly support and evidence the payment calculation methods and...",
+      "expected_answer_points": [
+        "Volume-3 Schedule of Payment_v19",
+        "Price Schedules B Cost Centres (Operation & Maintenance Services)_v2",
+        "evidence"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_e3884477d707e8d3",
+          "document_name": "Volume-3 Schedule of Payment.pdf",
+          "page_no": 20,
+          "must_contain_terms": [
+            "Volume-3",
+            "Schedule"
+          ]
+        },
+        {
+          "card_id": "card_b6bc90f66ddf1394",
+          "document_name": "Volume-6 Price Schedule WLC.pdf",
+          "page_no": 30,
+          "must_contain_terms": [
+            "Price",
+            "Schedules"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_14_prerequisite",
+      "question": "Which cited evidence connects Volume 2 - Process Design Section Divider_v3 with Volume-5 Background Information_v10, and what is the prerequisite between them? Context: Raw water quality data is a prerequisite for detailed process and design engineering.",
+      "expected_answer_points": [
+        "Volume 2 - Process Design Section Divider_v3",
+        "Volume-5 Background Information_v10",
+        "prerequisite"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_437443fd20c0a199",
+          "document_name": "Volume-2 Epmloyer's Requirement (ER).pdf",
+          "page_no": 90,
+          "must_contain_terms": [
+            "Process",
+            "Design"
+          ]
+        },
+        {
+          "card_id": "card_befdba358823a7d8",
+          "document_name": "Volume-5 Background Information Part1.pdf",
+          "page_no": 10,
+          "must_contain_terms": [
+            "Volume-5",
+            "Background"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_15_prerequisite",
+      "question": "Which cited evidence connects Civil Specifications - Plain and Reinforced Cement Concrete Works_v7 with Volume 2 - Operation Management Requirements_v7, and what is the prerequisite between them? Context: The concrete and steel structures must be constructed and accepted according to these specifications before the operation and maintenance period can begin. The specifications de...",
+      "expected_answer_points": [
+        "Civil Specifications - Plain and Reinforced Cement Concrete Works_v7",
+        "Volume 2 - Operation Management Requirements_v7",
+        "prerequisite"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_83b0577faed7e659",
+          "document_name": "Volume-2A Civil Specifications.pdf",
+          "page_no": 47,
+          "must_contain_terms": [
+            "Civil",
+            "Plain"
+          ]
+        },
+        {
+          "card_id": "card_809a4ef7d277f8bb",
+          "document_name": "Volume-2 Epmloyer's Requirement (ER).pdf",
+          "page_no": 330,
+          "must_contain_terms": [
+            "Operation",
+            "Management"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_16_other",
+      "question": "Which cited evidence connects ITB Bid Documents and Contract Structure_v5 with Volume-2D Contract Drawings_v8, and what is the other between them? Context: Reference and cross-document linking: The main domain explicitly references Volume 2D (Contract Drawings) as part of the bid documents, establishing a direct cross-reference rel...",
+      "expected_answer_points": [
+        "ITB Bid Documents and Contract Structure_v5",
+        "Volume-2D Contract Drawings_v8",
+        "other"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_414cb060edc07d39",
+          "document_name": "Volume-3 Schedule of Payment.pdf",
+          "page_no": 2,
+          "must_contain_terms": [
+            "Documents",
+            "Structure"
+          ]
+        },
+        {
+          "card_id": "card_727194cb3ce2b132",
+          "document_name": "Volume-2D Drawings.pdf",
+          "page_no": 9,
+          "must_contain_terms": [
+            "Volume-2D",
+            "Drawings"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_17_evidence",
+      "question": "Which cited evidence connects Panjrapur WTP Whole Life Cost Summary_v8 with ITB Whole Life Cost and Land Value Considerations, and what is the evidence between them? Context: The Bid Data Sheet (Appendix A) provides the evaluation methodology for Whole Life Cost, including discount rate, flow assumptions, and land monetization value, which are direct...",
+      "expected_answer_points": [
+        "Panjrapur WTP Whole Life Cost Summary_v8",
+        "ITB Whole Life Cost and Land Value Considerations",
+        "evidence"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_f80321ebdc29496b",
+          "document_name": "Volume-6 Price Schedule WLC.xls",
+          "page_no": 11,
+          "must_contain_terms": [
+            "Panjrapur",
+            "Whole"
+          ]
+        },
+        {
+          "card_id": "card_9424bccd8a0eecb5",
+          "document_name": "Instruction to Tendrer (ITB).pdf",
+          "page_no": 55,
+          "must_contain_terms": [
+            "Whole",
+            "Life"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_18_visual_support",
+      "question": "Which cited evidence connects D.C. Power System Specifications with Volume-2D Contract Drawings_v14, and what is the visual_support between them? Context: The related domain provides diagrams (single line diagrams, SCADA architecture) that visually represent the power distribution and control context in which the DC and emergency...",
+      "expected_answer_points": [
+        "D.C. Power System Specifications",
+        "Volume-2D Contract Drawings_v14",
+        "visual_support"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_c0b42982b6e35b4d",
+          "document_name": "Volume-2C EI Specifications.pdf",
+          "page_no": 115,
+          "must_contain_terms": [
+            "Power",
+            "System"
+          ]
+        },
+        {
+          "card_id": "card_fb0300b5db3d48ad",
+          "document_name": "Volume-2D Drawings.pdf",
+          "page_no": 15,
+          "must_contain_terms": [
+            "Volume-2D",
+            "Drawings"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    }
+  ]
+}

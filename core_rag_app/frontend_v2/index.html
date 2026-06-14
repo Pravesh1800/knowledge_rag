@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Evidence Mesh Studio</title>
+    <link rel="stylesheet" href="/v2/static/styles.css?v=pastel-workbench-16" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#/command" aria-label="Evidence Mesh Studio">
+          <span class="brand-mark">
+            <span>EM</span>
+          </span>
+          <span class="brand-copy">
+            <strong>Evidence Mesh</strong>
+            <small>Core RAG Studio</small>
+          </span>
+        </a>
+
+        <nav id="nav" class="nav" aria-label="Primary">
+          <a href="#/command" data-route="command" class="active"><span data-icon="command"></span><span>Workspace</span></a>
+          <a href="#/corpus" data-route="corpus"><span data-icon="corpus"></span><span>Corpus</span></a>
+          <a href="#/retrieval" data-route="retrieval"><span data-icon="retrieval"></span><span>Retrieval</span></a>
+          <a href="#/graph" data-route="graph"><span data-icon="graph"></span><span>Graph</span></a>
+          <a href="#/quality" data-route="quality"><span data-icon="quality"></span><span>Quality</span></a>
+          <a href="#/settings" data-route="settings"><span data-icon="settings"></span><span>Settings</span></a>
+        </nav>
+
+        <div class="sidebar-card">
+          <div class="state-row">
+            <span class="state-dot"></span>
+            <div>
+              <strong id="engine-status">Ready</strong>
+              <small id="engine-detail-mini">Runtime online</small>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div class="title-block">
+            <h1 id="page-title">Workspace</h1>
+            <p>One place to ingest, retrieve, inspect, and verify cited answers.</p>
+          </div>
+          <div class="top-actions">
+            <label class="project-picker">
+              <span>Project</span>
+              <select id="project-select" aria-label="Select project"></select>
+            </label>
+            <form id="project-form" class="create-form" aria-label="Create project">
+              <input id="project-name" type="text" placeholder="New project name" />
+              <button type="submit" title="Create project"><span data-icon="plus"></span></button>
+            </form>
+            <button id="refresh" class="icon-button" type="button" title="Refresh"><span data-icon="refresh"></span></button>
+          </div>
+        </header>
+
+        <section id="empty-state" class="page empty-state active-page">
+          <div class="empty-panel">
+            <div class="empty-art">
+              <div class="paper-sheet sheet-a"></div>
+              <div class="paper-sheet sheet-b"></div>
+              <div class="paper-sheet sheet-c"></div>
+              <div class="citation-pin">1</div>
+              <div class="citation-pin pin-two">2</div>
+            </div>
+            <div>
+              <h2>Start with a project.</h2>
+              <p>Create a workspace or select an existing corpus. The studio will load the document queue, graph coverage, retrieval trace, and quality signals.</p>
+            </div>
+          </div>
+        </section>
+
+        <div id="project-view" class="hidden">
+          <section id="route-command" class="page active-page">
+            <div class="workspace-grid">
+              <section class="task-panel">
+                <div class="panel-meta">
+                  <span id="stage-pill">Idle</span>
+                  <span id="active-project-name">No project</span>
+                </div>
+                <h2>Evidence workbench</h2>
+                <p id="overview-copy">Upload documents, build the graph, then ask questions with citations tied back to source pages.</p>
+                <div class="command-bar">
+                  <a href="#/retrieval" class="primary-action"><span data-icon="retrieval"></span>Ask evidence</a>
+                  <a href="#/corpus" class="secondary-action"><span data-icon="corpus"></span>Manage corpus</a>
+                  <button id="build-index-command" type="button" class="quiet-action"><span data-icon="spark"></span>Build mesh</button>
+                </div>
+              </section>
+
+              <section class="motion-panel" aria-label="Evidence flow">
+                <div class="motion-top">
+                  <div>
+                    <strong id="mesh-root">Evidence flow</strong>
+                    <span id="mesh-root-sub">0 cards</span>
+                  </div>
+                  <span>live workspace preview</span>
+                </div>
+                <div class="motion-reel">
+                  <div class="reel-track">
+                    <article>
+                      <span data-icon="corpus"></span>
+                      <strong>Source</strong>
+                      <small>PDF, XLS, DOC</small>
+                    </article>
+                    <article>
+                      <span data-icon="quality"></span>
+                      <strong>Claims</strong>
+                      <small>entities and facts</small>
+                    </article>
+                    <article>
+                      <span data-icon="graph"></span>
+                      <strong>Links</strong>
+                      <small>relationships</small>
+                    </article>
+                    <article>
+                      <span data-icon="retrieval"></span>
+                      <strong>Citation</strong>
+                      <small>page evidence</small>
+                    </article>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div class="metric-strip">
+              <article><span>Documents</span><strong id="metric-docs">0</strong><small id="metric-docs-sub">0 files</small></article>
+              <article><span>Evidence cards</span><strong id="metric-cards">0</strong><small>retrievable units</small></article>
+              <article><span>Domains</span><strong id="metric-domains">0</strong><small>summary groups</small></article>
+              <article><span>Relationships</span><strong id="metric-relationships">0</strong><small>graph links</small></article>
+            </div>
+
+            <div class="insight-grid">
+              <section class="panel">
+                <div class="panel-head">
+                  <h3>Build run</h3>
+                  <span id="progress-label">No run yet</span>
+                </div>
+                <div class="progress-track"><div id="progress-bar"></div></div>
+                <div id="activity-list" class="stack-list"></div>
+              </section>
+              <section class="panel">
+                <div class="panel-head">
+                  <h3>Readiness</h3>
+                  <a href="#/quality">Quality lab</a>
+                </div>
+                <div id="health-list" class="stack-list"></div>
+              </section>
+            </div>
+          </section>
+
+          <section id="route-corpus" class="page">
+            <div class="page-two-col">
+              <section class="panel upload-panel">
+                <div class="panel-head">
+                  <h3>Corpus intake</h3>
+                  <span id="upload-stage">Ready</span>
+                </div>
+                <form id="upload-form" class="dropzone">
+                  <input id="files" type="file" multiple />
+                  <div class="drop-copy">
+                    <span data-icon="upload"></span>
+                    <div>
+                      <strong>Stage source files</strong>
+                      <small>Choose multiple batches before uploading.</small>
+                    </div>
+                  </div>
+                  <div class="staged-toolbar">
+                    <span id="staged-upload-count">No files selected</span>
+                    <button id="clear-staged-files" type="button" disabled>Clear</button>
+                  </div>
+                  <div id="staged-upload-list" class="staged-list"></div>
+                  <button id="upload-submit" type="submit" disabled>Upload staged files</button>
+                </form>
+                <div class="build-strip">
+                  <div>
+                    <strong id="status-title">Waiting for documents</strong>
+                    <span id="engine-detail">Upload files before building.</span>
+                  </div>
+                  <button id="build-index" type="button"><span data-icon="spark"></span>Build mesh</button>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <h3>Document inventory</h3>
+                  <span id="queue-count">0 files</span>
+                </div>
+                <div id="documents-list" class="document-list"></div>
+              </section>
+            </div>
+          </section>
+
+          <section id="route-retrieval" class="page">
+            <div class="retrieval-grid">
+              <section class="panel chat-panel">
+                <div class="panel-head">
+                  <h3>Retrieval chat</h3>
+                  <button id="new-chat" type="button" class="text-button">New thread</button>
+                </div>
+                <div id="chat-log" class="chat-log"></div>
+                <form id="chat-form" class="chat-form ai-input-shell" aria-label="Ask Evidence Mesh">
+                  <div class="ai-input-frame">
+                    <div id="chat-attachment-preview" class="attachment-preview hidden"></div>
+                    <div class="textarea-stage">
+                      <textarea id="question" rows="1" autocomplete="off" aria-label="Chat question"></textarea>
+                      <span id="question-placeholder" class="animated-placeholder">Search evidence...</span>
+                    </div>
+                    <div class="composer-footer">
+                      <div class="composer-tools">
+                        <label id="chat-attach-label" class="composer-icon-button" title="Attach file">
+                          <input id="chat-attachment" type="file" accept="image/*,.pdf,.txt,.doc,.docx,.xls,.xlsx" />
+                          <span data-icon="paperclip"></span>
+                        </label>
+                        <button id="chat-search-toggle" class="composer-search active" type="button" aria-pressed="true">
+                          <span data-icon="globe"></span>
+                          <span>Search</span>
+                        </button>
+                      </div>
+                      <button id="send-chat" class="composer-send" type="submit" title="Send question">
+                        <span data-icon="send"></span>
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </section>
+
+              <aside class="side-stack">
+                <section class="panel">
+                  <h3>Trace</h3>
+                  <div id="evidence-timeline" class="timeline"></div>
+                </section>
+                <section class="panel">
+                  <h3>Top evidence</h3>
+                  <div id="top-evidence" class="source-grid"></div>
+                </section>
+              </aside>
+            </div>
+          </section>
+
+          <section id="route-graph" class="page">
+            <div class="graph-grid">
+              <aside class="panel graph-filters">
+                <h3>Layers</h3>
+                <label><input type="checkbox" checked /> Domain summaries <b id="graph-domain-count">0</b></label>
+                <label><input type="checkbox" checked /> Clusters <b id="graph-cluster-count">0</b></label>
+                <label><input type="checkbox" checked /> Evidence cards <b id="graph-card-count">0</b></label>
+                <label><input type="checkbox" checked /> Relationships <b id="graph-relation-count">0</b></label>
+              </aside>
+
+              <section class="panel graph-panel">
+                <div class="panel-head">
+                  <h3>Relationship map</h3>
+                  <span>coverage view</span>
+                </div>
+                <div class="soft-map">
+                  <div class="map-card map-root">
+                    <strong id="graph-root-name">Corpus</strong>
+                    <span id="graph-root-sub">0 cards</span>
+                  </div>
+                  <div class="map-card m1">Exact lookup</div>
+                  <div class="map-card m2">Multi-hop</div>
+                  <div class="map-card m3">Claims</div>
+                  <div class="map-card m4">Risk</div>
+                  <div class="map-line l1"></div>
+                  <div class="map-line l2"></div>
+                  <div class="map-line l3"></div>
+                  <div class="map-line l4"></div>
+                </div>
+              </section>
+
+              <aside class="panel">
+                <h3>Inspector</h3>
+                <div id="graph-inspector" class="stack-list"></div>
+              </aside>
+            </div>
+          </section>
+
+          <section id="route-quality" class="page">
+            <div class="quality-layout">
+              <section class="quality-panel">
+                <h2>Quality lab</h2>
+                <p>Use expected evidence, query modes, and answer grounding checks to catch regressions before relying on the system.</p>
+              </section>
+              <section class="quality-cards">
+                <article><span data-icon="quality"></span><strong>Evidence match</strong><small>Expected document, page, and card in top results.</small></article>
+                <article><span data-icon="retrieval"></span><strong>Grounded answer</strong><small>Claims map back to retrieved text.</small></article>
+                <article><span data-icon="graph"></span><strong>Mode coverage</strong><small>Exact, multi-hop, contradiction, risk, and summary.</small></article>
+              </section>
+            </div>
+          </section>
+
+          <section id="route-settings" class="page">
+            <div class="settings-grid">
+              <section class="panel">
+                <div class="panel-head">
+                  <h3>Runtime provider</h3>
+                  <span id="llm-key-state">Loading</span>
+                </div>
+                <form id="llm-settings-form" class="settings-form">
+                  <label><span>Provider</span><select id="llm-provider"><option value="openrouter">OpenRouter</option><option value="openai">OpenAI</option></select></label>
+                  <label><span>API key</span><input id="llm-api-key" type="password" autocomplete="off" placeholder="Leave blank to keep saved key" /></label>
+                  <label><span>Default model</span><input id="llm-model" type="text" /></label>
+                  <label><span>Map model</span><input id="llm-map-model" type="text" /></label>
+                  <label><span>Search model</span><input id="llm-search-model" type="text" /></label>
+                  <button type="submit">Save runtime</button>
+                  <span id="settings-save-state"></span>
+                </form>
+              </section>
+
+              <section class="panel">
+                <div class="panel-head">
+                  <h3>Provider models</h3>
+                  <span>.env values</span>
+                </div>
+                <div class="model-grid">
+                  <div>
+                    <h4>OpenRouter</h4>
+                    <label><span>OPENROUTER_MODEL</span><input id="openrouter-model" type="text" /></label>
+                    <label><span>OPENROUTER_MAP_MODEL</span><input id="openrouter-map-model" type="text" /></label>
+                    <label><span>OPENROUTER_SEARCH_MODEL</span><input id="openrouter-search-model" type="text" /></label>
+                  </div>
+                  <div>
+                    <h4>OpenAI</h4>
+                    <label><span>OPENAI_MODEL</span><input id="openai-model" type="text" /></label>
+                    <label><span>OPENAI_MAP_MODEL</span><input id="openai-map-model" type="text" /></label>
+                    <label><span>OPENAI_SEARCH_MODEL</span><input id="openai-search-model" type="text" /></label>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="/v2/static/app.js?v=pastel-workbench-16"></script>
+  </body>
+</html>

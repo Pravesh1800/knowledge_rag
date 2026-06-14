@@ -6,6 +6,7 @@ indexes/
 work/
 logs/
 projects/
+cache/
 *.log
 *_stdout.log
 *_stderr.log
@@ -13,7 +14,3 @@ projects/
 *.xlsx
 *.xls
 *.csv
-generation_exports/
-index_exports/
-index_exports.zip
-prequalification_rerun_result.json

@@ -1,0 +1,46 @@
+{
+  "schema_version": "evaluation_set.v1.0",
+  "name": "example_retrieval_eval",
+  "description": "Template evaluation set. Replace these cases with real project questions and evidence from your indexed corpus.",
+  "cases": [
+    {
+      "id": "pump_backup_power",
+      "question": "What does the project say about backup power for the pump station?",
+      "expected_answer_points": [
+        "backup power requirement",
+        "pump station or pumping assets"
+      ],
+      "expected_evidence": [
+        {
+          "document_name": "pump-spec.txt",
+          "page_no": 1,
+          "must_contain_terms": ["backup", "power"]
+        }
+      ],
+      "expected_cross_document": false,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "controls_and_civil_interfaces",
+      "question": "Which evidence connects controls requirements with civil access or chamber constraints?",
+      "expected_answer_points": [
+        "controls or alarms",
+        "civil access or valve chamber"
+      ],
+      "expected_evidence": [
+        {
+          "document_name": "controls.txt",
+          "page_no": 1,
+          "must_contain_terms": ["control", "alarm"]
+        },
+        {
+          "document_name": "civil.txt",
+          "page_no": 1,
+          "must_contain_terms": ["valve", "chamber"]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    }
+  ]
+}

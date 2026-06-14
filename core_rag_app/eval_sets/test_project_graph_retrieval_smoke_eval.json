@@ -1,0 +1,273 @@
+{
+  "schema_version": "evaluation_set.v1.0",
+  "name": "test_project_graph_retrieval_smoke_eval",
+  "description": "Auto-built benchmark from the real test project. Includes practical project questions and high-quality card-linked graph relationships. Smoke subset for model-ranked interactive benchmark.",
+  "project_id": "test",
+  "case_count": 10,
+  "cases": [
+    {
+      "id": "power_supply_responsibility",
+      "question": "Where does the project say who pays for construction power and the new power connection?",
+      "expected_answer_points": [
+        "construction power paid by contractor",
+        "new power connection paid by employer"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_d386f55df4319a7b",
+          "document_name": "Volume-2 Epmloyer's Requirement (ER).pdf",
+          "page_no": 18,
+          "must_contain_terms": [
+            "Power",
+            "Supply"
+          ]
+        },
+        {
+          "card_id": "card_0f6fb88b0746d5a0",
+          "document_name": "Instruction to Tendrer (ITB).pdf",
+          "page_no": 47,
+          "must_contain_terms": [
+            "Power",
+            "Supply"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "employer_identity",
+      "question": "Who is identified as the Employer for the 910 MLD WTP Panjrapur tender?",
+      "expected_answer_points": [
+        "Brihanmumbai Municipal Corporation",
+        "Employer"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_28a0dcd097b3e443",
+          "document_name": "Instruction to Tendrer (ITB).pdf",
+          "page_no": 7,
+          "must_contain_terms": [
+            "Instruction",
+            "Bidders"
+          ]
+        }
+      ],
+      "expected_cross_document": false,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "operating_license_parties",
+      "question": "Which source identifies the parties to the Operating Licence between the Employer and Contractor?",
+      "expected_answer_points": [
+        "Brihanmumbai Municipal Corporation",
+        "Contractor",
+        "Operating Licence"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_5416272bded6e222",
+          "document_name": "Volume-4 Contract Forms.pdf",
+          "page_no": 22,
+          "must_contain_terms": [
+            "Volume-4",
+            "Forms"
+          ]
+        }
+      ],
+      "expected_cross_document": false,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "itb_defined_terms",
+      "question": "Where are the ITB defined terms such as Employer, Contract Forms, GST, JV, and Base Date listed?",
+      "expected_answer_points": [
+        "Employer",
+        "Contract Forms",
+        "GST",
+        "JV"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_730a2739692b9182",
+          "document_name": "Instruction to Tendrer (ITB).pdf",
+          "page_no": 40,
+          "must_contain_terms": [
+            "Part",
+            "General"
+          ]
+        }
+      ],
+      "expected_cross_document": false,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "pre_bid_meeting_process",
+      "question": "What source explains the pre-bid meeting process and written question submission timing?",
+      "expected_answer_points": [
+        "pre-bid meeting",
+        "questions",
+        "3 working days"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_9d2f468da24e5db3",
+          "document_name": "Instruction to Tendrer (ITB).pdf",
+          "page_no": 14,
+          "must_contain_terms": [
+            "Pre-Bid",
+            "Meeting"
+          ]
+        }
+      ],
+      "expected_cross_document": false,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "price_schedule_notes",
+      "question": "Which evidence explains the whole life cost spreadsheet notes, discount rate, and cost limits?",
+      "expected_answer_points": [
+        "Whole Life Cost",
+        "discount rate",
+        "cost centre limits"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_2b436cb6386b27ef",
+          "document_name": "Annexure02CorrigendumVIIIPriceScheduleWLCRevP2.xls",
+          "page_no": 1,
+          "must_contain_terms": [
+            "Pricing",
+            "Schedule"
+          ]
+        }
+      ],
+      "expected_cross_document": false,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_01_continuation",
+      "question": "Which cited evidence connects Price Schedule A1.1 Preliminaries and General Items with Volume-6 Price Schedule WLC_v4, and what is the continuation between them? Context: The related domain 'Design-Build Phase Pricing' provides a more detailed and complete pricing breakdown for the same design-build cost centers outlined in the main domain, effec...",
+      "expected_answer_points": [
+        "Price Schedule A1.1 Preliminaries and General Items",
+        "Volume-6 Price Schedule WLC_v4",
+        "continuation"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_74b45a7d05bfd549",
+          "document_name": "CorrigendumIIIwithAnnexures0411.pdf",
+          "page_no": 94,
+          "must_contain_terms": [
+            "Price",
+            "Schedule"
+          ]
+        },
+        {
+          "card_id": "card_5de4d7ad5ca9da08",
+          "document_name": "Volume-6 Price Schedule WLC.pdf",
+          "page_no": 4,
+          "must_contain_terms": [
+            "Volume-6",
+            "Price"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_02_shared_context",
+      "question": "Which cited evidence connects Volume 2B - Pressure Gauges Specifications with Corrigendum VIII - 910 MLD WTP at Panjrapur, and what is the shared_context between them? Context: Both domains describe parts of the same larger project: the 910 MLD Water Treatment Plant at Panjrapur. The main domain provides technical specifications for flow control equipm...",
+      "expected_answer_points": [
+        "Volume 2B - Pressure Gauges Specifications",
+        "Corrigendum VIII - 910 MLD WTP at Panjrapur",
+        "shared_context"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_859d7d85ec6ee09c",
+          "document_name": "Volume-2B Mech Specifications.pdf",
+          "page_no": 38,
+          "must_contain_terms": [
+            "Pressure",
+            "Gauges"
+          ]
+        },
+        {
+          "card_id": "card_0116febf7a2927cb",
+          "document_name": "CorrigendumVIIIwithAnnexures.pdf",
+          "page_no": 1,
+          "must_contain_terms": [
+            "Corrigendum",
+            "VIII"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_03_shared_context",
+      "question": "Which cited evidence connects Technical Requirements for 910 MLD WTP Components with Volume 2B - General and Particular Mechanical Specification, and what is the shared_context between them? Context: Both domains describe the same 910 MLD WTP project, with the main domain providing detailed technical specifications for process equipment and the related domain providing the o...",
+      "expected_answer_points": [
+        "Technical Requirements for 910 MLD WTP Components",
+        "Volume 2B - General and Particular Mechanical Specification",
+        "shared_context"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_2af4c7aa2b6d8bfd",
+          "document_name": "Instruction to Tendrer (ITB).pdf",
+          "page_no": 64,
+          "must_contain_terms": [
+            "Technical",
+            "Components"
+          ]
+        },
+        {
+          "card_id": "card_aa917eaf10095c04",
+          "document_name": "Volume-2B Mech Specifications.pdf",
+          "page_no": 1,
+          "must_contain_terms": [
+            "General",
+            "Particular"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    },
+    {
+      "id": "relationship_04_other",
+      "question": "Which cited evidence connects Volume 2 - Appendix A_v2 with Price Schedule A1.2 Design, and what is the other between them? Context: The Appendices and Reference (main domain) provide specifications, performance requirements, approved supplier lists, and other technical details that are directly referenced an...",
+      "expected_answer_points": [
+        "Volume 2 - Appendix A_v2",
+        "Price Schedule A1.2 Design",
+        "other"
+      ],
+      "expected_evidence": [
+        {
+          "card_id": "card_1a09e1f662ee35e4",
+          "document_name": "Volume-2 Epmloyer's Requirement (ER).pdf",
+          "page_no": 422,
+          "must_contain_terms": [
+            "Appendix",
+            "APPENDIX"
+          ]
+        },
+        {
+          "card_id": "card_e8d0552ece0b65c3",
+          "document_name": "CorrigendumIIIwithAnnexures0411.pdf",
+          "page_no": 95,
+          "must_contain_terms": [
+            "Price",
+            "Schedule"
+          ]
+        }
+      ],
+      "expected_cross_document": true,
+      "forbidden_answer_terms": []
+    }
+  ]
+}
